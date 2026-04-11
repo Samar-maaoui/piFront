@@ -1,0 +1,37 @@
+<header class="fd-header">
+  <div class="fd-header-content">
+
+    <!-- Logo -->
+    <a routerLink="/" class="fd-logo">
+      <span class="fd-logo-icon">🌿</span>
+      <span class="fd-logo-text">Jungle in English</span>
+    </a>
+
+    <!-- Nav links -->
+    <nav class="fd-nav">
+      <a
+        *ngFor="let item of navItems"
+        [routerLink]="item.route"
+        routerLinkActive="active"
+        class="fd-nav-link"
+      >
+        <span *ngIf="item.icon" class="fd-nav-icon">{{ item.icon }}</span>
+        {{ item.label }}
+      </a>
+    </nav>
+
+    <!-- User section -->
+    <div class="fd-user" *ngIf="currentUser">
+      <div class="fd-avatar">
+        {{ currentUser.firstName[0] }}{{ currentUser.lastName[0] }}
+      </div>
+      <div class="fd-user-info">
+        <span class="fd-user-name">{{ currentUser.firstName }} {{ currentUser.lastName }}</span>
+        <span class="fd-role-badge fd-role-{{ currentUser.role | lowercase }}">{{ currentUser.role }}</span>
+      </div>
+      <button class="fd-btn-logout" (click)="logout()">Sign Out</button>
+    </div>
+
+  </div>
+</header>
+

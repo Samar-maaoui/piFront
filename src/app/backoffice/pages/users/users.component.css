@@ -1,0 +1,149 @@
+/* ── Backoffice Users Page ──────────────────────────────────────── */
+.error-banner {
+  background: #fee2e2;
+  color: #991b1b;
+  border: 1px solid #fca5a5;
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  margin-bottom: 1.25rem;
+  font-size: 0.875rem;
+}
+
+.users-page {
+  padding: 0;
+}
+
+.page-header {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  margin-bottom: 1.75rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid #e2e8f0;
+}
+
+.page-header h2 {
+  margin: 0;
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.01em;
+}
+
+.user-count {
+  background: #ede9fe;
+  color: #4f46e5;
+  font-size: 0.75rem;
+  font-weight: 700;
+  padding: 0.2rem 0.65rem;
+  border-radius: 999px;
+  letter-spacing: 0.03em;
+}
+
+.state-msg {
+  color: #94a3b8;
+  font-style: italic;
+  font-size: 0.9rem;
+}
+
+/* Table */
+.table-wrapper {
+  overflow-x: auto;
+  border-radius: 10px;
+  border: 1px solid #e2e8f0;
+  box-shadow: 0 1px 8px rgba(15, 23, 42, 0.06);
+}
+
+.users-table {
+  width: 100%;
+  border-collapse: collapse;
+  background: #fff;
+  font-size: 0.875rem;
+}
+
+.users-table thead {
+  background: #1e293b;
+  color: #e2e8f0;
+}
+
+.users-table th {
+  text-align: left;
+  padding: 0.8rem 1.1rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+  color: #94a3b8;
+}
+
+.users-table tbody tr {
+  border-bottom: 1px solid #f1f5f9;
+  transition: background 0.12s;
+}
+
+.users-table tbody tr:last-child {
+  border-bottom: none;
+}
+
+.users-table tbody tr:hover {
+  background: #f8f9ff;
+}
+
+.users-table td {
+  padding: 0.75rem 1.1rem;
+  color: #334155;
+  vertical-align: middle;
+}
+
+.col-id    { color: #94a3b8; font-size: 0.8rem; font-family: monospace; }
+.col-email { color: #475569; }
+.col-date  { color: #94a3b8; font-size: 0.8rem; white-space: nowrap; }
+.col-action { text-align: right; padding-right: 1rem; }
+
+.clickable-row { cursor: pointer; }
+
+.btn-view {
+  background: transparent;
+  border: 1px solid #6366f1;
+  color: #6366f1;
+  padding: 0.25rem 0.75rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s;
+  white-space: nowrap;
+}
+
+.btn-view:hover {
+  background: #6366f1;
+  color: #fff;
+}
+
+/* Role badges */
+.role-badge {
+  display: inline-block;
+  padding: 0.18rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+}
+.role-badge.role-student { background: #dcfce7; color: #15803d; }
+.role-badge.role-tutor   { background: #dbeafe; color: #1d4ed8; }
+.role-badge.role-admin   { background: #ede9fe; color: #6d28d9; }
+
+/* Status badges */
+.status-badge {
+  display: inline-block;
+  padding: 0.18rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: capitalize;
+}
+.status-badge.status-active  { background: #dcfce7; color: #15803d; }
+.status-badge.status-pending { background: #fef9c3; color: #a16207; }
+.status-badge.status-banned  { background: #fee2e2; color: #b91c1c; }

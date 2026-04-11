@@ -1,0 +1,258 @@
+<div class="modal-overlay" *ngIf="visible" (click)="onClose()">
+  <div class="modal-container question-modal" (click)="$event.stopPropagation()">
+    <!-- Header avec indicateur de progression -->
+    <div class="modal-header">
+      <div class="header-content">
+        <h2>{{ question ? '✏️ Modifier la question' : '➕ Nouvelle question' }}</h2>
+        <div class="progress-indicator" *ngIf="hasAnswers">
+          <span class="badge">{{ answersLength }} réponse(s)</span>
+        </div>
+      </div>
+      <button class="icon-btn close" (click)="onClose()">
+        <i class="fa-solid fa-times"></i>
+      </button>
+    </div>
+
+    <form class="modal-form" (ngSubmit)="onSave()" #questionForm="ngForm">
+      <!-- message d'erreur global -->
+      <div *ngIf="errorMessage" class="error-message">
+        <i class="fa-solid fa-exclamation-circle"></i> {{ errorMessage }}
+      </div>
+
+      <!-- Section principale : Question -->
+      <div class="form-section">
+        <div class="section-title">
+          <i class="fa-solid fa-question-circle"></i>
+          <h3>Question</h3>
+        </div>
+        
+        <div class="form-group">
+          <label>Énoncé <span class="required">*</span></label>
+          <div class="rich-textarea">
+            <textarea
+              [(ngModel)]="formData.text"
+              name="text"
+              rows="4"
+              placeholder="Que souhaitez-vous demander ?"
+              required
+              #textInput="ngModel"
+              [class.invalid]="textInput.invalid && textInput.touched"
+            ></textarea>
+            <div class="char-counter">{{ formData.text.length || 0 }} caractères</div>
+            <div class="input-feedback" *ngIf="textInput.touched && textInput.invalid">
+              <small class="error">
+                <i class="fa-solid fa-exclamation-circle"></i>
+                Énoncé requis
+              </small>
+            </div>
+          </div>
+        </div>
+
+        <!-- Paramètres de la question -->
+        <div class="question-settings">
+          <div class="setting-item">
+            <label>
+              <i class="fa-solid fa-star"></i>
+              <span>Points</span>
+            </label>
+            <div class="points-selector">
+              <button type="button" (click)="adjustPoints(-1)" [disabled]="points <= 1">−</button>
+              <input 
+                type="number" 
+                [(ngModel)]="formData.points" 
+                name="points"
+                min="1" 
+                max="100"
+                readonly
+              >
+              <button type="button" (click)="adjustPoints(1)" [disabled]="points >= 100">+</button>
+            </div>
+          </div>
+
+          <div class="setting-item">
+            <label>
+              <i class="fa-solid fa-sort"></i>
+              <span>Position</span>
+            </label>
+            <select [(ngModel)]="formData.orderIndex" name="orderIndex">
+              <option [value]="i" *ngFor="let _ of [].constructor(maxPosition); let i = index">
+                {{ i === 0 ? 'Début' : 'Position ' + (i + 1) }}
+              </option>
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section réponses -->
+      <div class="form-section answers-section">
+        <div class="section-title">
+          <i class="fa-solid fa-list-check"></i>
+          <h3>Réponses</h3>
+          <button 
+            type="button"
+            class="add-btn"
+            (click)="addAnswer()"
+            [disabled]="!canAddAnswer"
+          >
+            <i class="fa-solid fa-plus"></i>
+            Ajouter
+          </button>
+        </div>
+
+        <!-- Zone de dépôt pour les réponses -->
+        <div 
+          class="answers-container"
+          cdkDropList
+          (cdkDropListDropped)="onAnswerDrop($event)"
+        >
+          <!-- Template pour chaque réponse -->
+          <div 
+            *ngFor="let answer of formData.answers; let i = index; let last = last"
+            class="answer-card"
+            [class.correct]="answer.isCorrect"
+            [class.warning]="!answer.text && answer.text !== ''"
+            cdkDrag
+          >
+            <!-- Handle de drag -->
+            <div class="drag-handle" cdkDragHandle>
+              <i class="fa-solid fa-grip-vertical"></i>
+            </div>
+
+            <!-- Contenu de la réponse -->
+            <div class="answer-content">
+              <div class="answer-header">
+                <span class="answer-number">{{ i + 1 }}</span>
+                <div class="answer-type">
+                  <button 
+                    type="button"
+                    class="type-btn"
+                    [class.active]="answer.isCorrect"
+                    (click)="toggleCorrect(i)"
+                  >
+                    <i class="fa-solid fa-check"></i>
+                    <span>Correcte</span>
+                  </button>
+                </div>
+              </div>
+
+              <div class="answer-input">
+                <input
+                  [(ngModel)]="answer.text"
+                  [name]="'answer_' + i"
+                  type="text"
+                  placeholder="Saisissez la réponse..."
+                  [required]="true"
+                  #answerInput="ngModel"
+                >
+                
+                <!-- Feedback visuel -->
+                <div class="input-feedback" *ngIf="answerInput.touched">
+                  <small *ngIf="!answer.text" class="error">
+                    <i class="fa-solid fa-exclamation-circle"></i>
+                    Réponse requise
+                  </small>
+                </div>
+              </div>
+
+              <!-- Actions de la réponse -->
+              <div class="answer-actions">
+                <button 
+                  type="button"
+                  class="icon-btn duplicate"
+                  (click)="duplicateAnswer(i)"
+                  title="Dupliquer"
+                >
+                  <i class="fa-solid fa-copy"></i>
+                </button>
+                <button 
+                  type="button"
+                  class="icon-btn delete"
+                  (click)="removeAnswer(i)"
+                  [disabled]="!canRemoveAnswer"
+                  title="Supprimer"
+                >
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </div>
+
+            <!-- Indicateur de connexion visuelle -->
+            <div class="answer-connector" *ngIf="!last"></div>
+          </div>
+
+          <!-- État vide -->
+          <div class="empty-state" *ngIf="!hasAnswers">
+            <div class="empty-icon">
+              <i class="fa-solid fa-arrow-pointer"></i>
+            </div>
+            <h4>Aucune réponse</h4>
+            <p>Commencez par ajouter une réponse</p>
+            <button type="button" class="primary-btn" (click)="addAnswer()">
+              <i class="fa-solid fa-plus"></i>
+              Ajouter une réponse
+            </button>
+          </div>
+        </div>
+
+        <!-- Indicateur de type de question -->
+        <div class="question-type-indicator" *ngIf="hasAnswers">
+          <div class="type-badge" [class.multiple]="hasMultipleCorrectAnswers()">
+            <i class="fa-solid" [class.fa-circle]="!hasMultipleCorrectAnswers()" [class.fa-circle-check]="hasMultipleCorrectAnswers()"></i>
+            <span>
+              {{ hasMultipleCorrectAnswers() ? 'Choix multiples' : 'Choix unique' }}
+            </span>
+          </div>
+          
+          <!-- Règle de validation -->
+          <div class="validation-rule" *ngIf="!hasMultipleCorrectAnswers()">
+            <i class="fa-solid fa-info-circle"></i>
+            <small>Une seule réponse correcte autorisée</small>
+          </div>
+        </div>
+
+        <!-- Barre de progression -->
+        <div class="answers-progress" *ngIf="hasAnswers">
+          <div class="progress-stats">
+            <span>{{ getCorrectAnswersCount() }} correcte(s)</span>
+            <span>{{ answersLength }}/10 réponses</span>
+          </div>
+          <div class="progress-bar">
+            <div 
+              class="progress-fill"
+              [style.width.%]="answersProgress"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Footer avec actions -->
+      <div class="modal-footer">
+        <div class="footer-actions">
+          <button 
+            type="button"
+            class="secondary-btn"
+            (click)="onClose()"
+          >
+            Annuler
+          </button>
+          
+          <button 
+            type="submit"
+            class="primary-btn"
+            [disabled]="!isFormValid()"
+            [class.loading]="saving"
+          >
+            <i class="fa-solid" [class.fa-save]="!saving" [class.fa-spinner]="saving" [class.fa-pulse]="saving"></i>
+            <span>{{ saving ? 'Enregistrement...' : (question ? 'Enregistrer' : 'Créer la question') }}</span>
+          </button>
+        </div>
+
+        <!-- Raccourcis clavier -->
+        <div class="keyboard-shortcuts">
+          <span><kbd>⌘</kbd> + <kbd>Enter</kbd> pour sauvegarder</span>
+          <span><kbd>Esc</kbd> pour fermer</span>
+        </div>
+      </div>
+    </form>
+  </div>
+</div>

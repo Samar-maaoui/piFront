@@ -1,0 +1,54 @@
+<section class="quiz-take">
+  <p *ngIf="loading" class="loading">
+    <i class="fa-solid fa-spinner fa-spin"></i>&nbsp;&nbsp;Chargement du quiz...
+  </p>
+
+  <div *ngIf="errorMessage" class="error">
+    <i class="fa-solid fa-exclamation-circle"></i>
+    {{ errorMessage }}
+  </div>
+
+  <div *ngIf="!loading && quiz">
+    <h2>{{ quiz.title }}</h2>
+    <p>Niveau : {{ quiz.level }}</p>
+
+    <form *ngIf="score === null && quiz.questions && quiz.questions.length > 0" (ngSubmit)="submit()">
+      <div *ngFor="let q of quiz.questions; let i = index" class="question-block">
+        <!-- Support du format QuizQuestion (prop: question, options) et Question (prop: text, answers) -->
+        <p class="question-text">
+          {{ i+1 }}. {{ q.question || q.text }}
+
+        <!-- Format QuizQuestion avec options simples -->
+          <div *ngIf="q.options && q.options.length > 0; else answerFormat">
+          <div *ngFor="let option of q.options; let j = index" class="option-block">
+            <p-radioButton name="q{{i}}" [value]="j" [(ngModel)]="answers[i]" (onClick)="selectAnswer(i, j)"></p-radioButton>
+            <label>{{ option }}</label>
+          </div>
+        </div>
+
+        <!-- Format Question avec answers objets -->
+        <ng-template #answerFormat>
+          <div *ngIf="q.answers && q.answers.length > 0">
+            <div *ngFor="let answer of q.answers; let j = index" class="option-block">
+              <p-radioButton name="q{{i}}" [value]="j" [(ngModel)]="answers[i]" (onClick)="selectAnswer(i, j)"></p-radioButton>
+              <label>{{ answer.text }}</label>
+            </div>
+          </div>
+        </ng-template>
+      </div>
+
+      <button pButton type="submit" label="Terminer"></button>
+    </form>
+
+    <div *ngIf="score === null && (!quiz.questions || quiz.questions.length === 0)" class="no-questions">
+      <p>Ce quiz n'a pas de questions disponibles.</p>
+      <button pButton type="button" label="Retour" (click)="backToList()"></button>
+    </div>
+
+    <div *ngIf="score !== null" class="result">
+      <h3>Résultat</h3>
+      <p>Score : {{ score }}% <span *ngIf="quiz.passingScore">(min {{quiz.passingScore}}%)</span></p>
+      <button pButton type="button" label="Retour" (click)="backToList()"></button>
+    </div>
+  </div>
+</section>

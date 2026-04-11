@@ -1,0 +1,238 @@
+<div class="signup-container">
+  <div class="signup-card">
+    <h1>Create Your Account</h1>
+
+    <!-- Role Selection -->
+    <div class="role-selection">
+      <h2>Choose Your Role</h2>
+      <div class="role-buttons">
+        <button
+          type="button"
+          class="role-btn"
+          [class.active]="selectedRole === 'STUDENT'"
+          (click)="onRoleChange('STUDENT')"
+        >
+          <span>Student</span>
+        </button>
+        <button
+          type="button"
+          class="role-btn"
+          [class.active]="selectedRole === 'TUTOR'"
+          (click)="onRoleChange('TUTOR')"
+        >
+          <span>Tutor</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Signup Form -->
+    <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" *ngIf="selectedRole">
+      <!-- Required Fields Section -->
+      <div class="form-section">
+        <h3>Personal Information</h3>
+
+        <!-- First Name -->
+        <div class="form-group">
+          <label for="firstName">First Name <span class="required">*</span></label>
+          <input
+            type="text"
+            id="firstName"
+            class="form-control"
+            formControlName="firstName"
+            [class.is-invalid]="isFieldInvalid('firstName')"
+            placeholder="Your first name"
+          />
+          <div class="error-message" *ngIf="isFieldInvalid('firstName')">
+            <span *ngIf="f['firstName'].errors?.['required']">First name is required</span>
+            <span *ngIf="f['firstName'].errors?.['minlength']">First name must be at least 2 characters</span>
+          </div>
+        </div>
+
+        <!-- Last Name -->
+        <div class="form-group">
+          <label for="lastName">Last Name <span class="required">*</span></label>
+          <input
+            type="text"
+            id="lastName"
+            class="form-control"
+            formControlName="lastName"
+            [class.is-invalid]="isFieldInvalid('lastName')"
+            placeholder="Your last name"
+          />
+          <div class="error-message" *ngIf="isFieldInvalid('lastName')">
+            <span *ngIf="f['lastName'].errors?.['required']">Last name is required</span>
+            <span *ngIf="f['lastName'].errors?.['minlength']">Last name must be at least 2 characters</span>
+          </div>
+        </div>
+
+        <!-- Email -->
+        <div class="form-group">
+          <label for="email">Email <span class="required">*</span></label>
+          <input
+            type="email"
+            id="email"
+            class="form-control"
+            formControlName="email"
+            [class.is-invalid]="isFieldInvalid('email')"
+            placeholder="your.email@example.com"
+          />
+          <div class="error-message" *ngIf="isFieldInvalid('email')">
+            <span *ngIf="f['email'].errors?.['required']">Email is required</span>
+            <span *ngIf="f['email'].errors?.['email']">Please enter a valid email address</span>
+          </div>
+        </div>
+
+        <!-- Password -->
+        <div class="form-group">
+          <label for="password">Password <span class="required">*</span></label>
+          <input
+            type="password"
+            id="password"
+            class="form-control"
+            formControlName="password"
+            [class.is-invalid]="isFieldInvalid('password')"
+            placeholder="Minimum 8 characters"
+          />
+          <div class="error-message" *ngIf="isFieldInvalid('password')">
+            <span *ngIf="f['password'].errors?.['required']">Password is required</span>
+            <span *ngIf="f['password'].errors?.['minlength']">Password must be at least 8 characters</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Student Profile Section -->
+      <div class="form-section" *ngIf="selectedRole === 'STUDENT'">
+        <h3>Student Profile</h3>
+
+        <!-- Level -->
+        <div class="form-group">
+          <label for="level">English Level <span class="required">*</span></label>
+          <select
+            id="level"
+            class="form-control"
+            formControlName="level"
+            [class.is-invalid]="isFieldInvalid('level')"
+          >
+            <option value="">Select your level</option>
+            <option value="BEGINNER">Beginner</option>
+            <option value="ELEMENTARY">Elementary</option>
+            <option value="INTERMEDIATE">Intermediate</option>
+            <option value="UPPER_INTERMEDIATE">Upper Intermediate</option>
+            <option value="ADVANCED">Advanced</option>
+            <option value="PROFICIENCY">Proficiency</option>
+          </select>
+          <div class="error-message" *ngIf="isFieldInvalid('level')">
+            <span *ngIf="f['level'].errors?.['required']">English level is required</span>
+          </div>
+        </div>
+
+        <!-- Learning Goals -->
+        <div class="form-group">
+          <label for="learningGoals">Learning Goals <span class="required">*</span></label>
+          <textarea
+            id="learningGoals"
+            class="form-control"
+            formControlName="learningGoals"
+            [class.is-invalid]="isFieldInvalid('learningGoals')"
+            placeholder="Describe your learning goals..."
+            rows="4"
+          ></textarea>
+          <div class="error-message" *ngIf="isFieldInvalid('learningGoals')">
+            <span *ngIf="f['learningGoals'].errors?.['required']">Learning goals are required</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tutor Profile Section -->
+      <div class="form-section" *ngIf="selectedRole === 'TUTOR'">
+        <h3>Tutor Profile</h3>
+
+        <!-- Bio -->
+        <div class="form-group">
+          <label for="bio">Biography <span class="required">*</span></label>
+          <textarea
+            id="bio"
+            class="form-control"
+            formControlName="bio"
+            [class.is-invalid]="isFieldInvalid('bio')"
+            placeholder="Tell us about yourself and your teaching experience..."
+            rows="4"
+          ></textarea>
+          <div class="error-message" *ngIf="isFieldInvalid('bio')">
+            <span *ngIf="f['bio'].errors?.['required']">Biography is required</span>
+          </div>
+        </div>
+
+        <!-- Specialization -->
+        <div class="form-group">
+          <label for="specialization">Specialization <span class="required">*</span></label>
+          <input
+            type="text"
+            id="specialization"
+            class="form-control"
+            formControlName="specialization"
+            [class.is-invalid]="isFieldInvalid('specialization')"
+            placeholder="e.g. Business English, TOEFL Prep, Conversation..."
+          />
+          <div class="error-message" *ngIf="isFieldInvalid('specialization')">
+            <span *ngIf="f['specialization'].errors?.['required']">Specialization is required</span>
+          </div>
+        </div>
+
+        <!-- Experience Years -->
+        <div class="form-group">
+          <label for="experienceYears">Years of Experience <span class="required">*</span></label>
+          <input
+            type="number"
+            id="experienceYears"
+            class="form-control"
+            formControlName="experienceYears"
+            [class.is-invalid]="isFieldInvalid('experienceYears')"
+            placeholder="0"
+            min="0"
+          />
+          <div class="error-message" *ngIf="isFieldInvalid('experienceYears')">
+            <span *ngIf="f['experienceYears'].errors?.['required']">Years of experience are required</span>
+            <span *ngIf="f['experienceYears'].errors?.['min']">Please enter a positive number</span>
+          </div>
+        </div>
+
+        <!-- Hourly Rate -->
+        <div class="form-group">
+          <label for="hourlyRate">Hourly Rate (TND) <span class="required">*</span></label>
+          <input
+            type="number"
+            id="hourlyRate"
+            class="form-control"
+            formControlName="hourlyRate"
+            [class.is-invalid]="isFieldInvalid('hourlyRate')"
+            placeholder="0.00"
+            min="0"
+            step="0.01"
+          />
+          <div class="error-message" *ngIf="isFieldInvalid('hourlyRate')">
+            <span *ngIf="f['hourlyRate'].errors?.['required']">Hourly rate is required</span>
+            <span *ngIf="f['hourlyRate'].errors?.['min']">Please enter a positive price</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" class="btn-submit" [disabled]="!signupForm.valid || loading">
+        <span *ngIf="!loading">Create My Account</span>
+        <span *ngIf="loading">Creating Account...</span>
+      </button>
+
+      <!-- Error Message -->
+      <div class="error-message alert-error" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+    </form>
+
+    <!-- Link to login -->
+    <div class="form-links">
+      <span>Already have an account? </span>
+      <a routerLink="/login" class="link">Sign in</a>
+    </div>
+  </div>
+</div>

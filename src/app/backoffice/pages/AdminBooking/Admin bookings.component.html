@@ -1,0 +1,169 @@
+<!-- admin-bookings.component.html -->
+<div class="page-wrapper">
+
+  <!-- Header -->
+  <div class="page-hero">
+    <div class="hero-left">
+      <div class="hero-badge">🛡️ Administration</div>
+      <h1 class="hero-title">Toutes les Réservations</h1>
+      <p class="hero-subtitle">Gérez l'ensemble des sessions et résolvez les conflits</p>
+    </div>
+    <div class="hero-actions">
+      <button class="btn-export" (click)="exportCSV()">📥 Exporter CSV</button>
+      <button class="btn-refresh" (click)="loadBookings()">🔄 Actualiser</button>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="stats-row">
+    <div class="stat-card" *ngFor="let stat of statCards" [style.border-color]="stat.color">
+      <div class="stat-icon">{{ stat.icon }}</div>
+      <div class="stat-number" [style.color]="stat.color">{{ stat.count }}</div>
+      <div class="stat-label">{{ stat.label }}</div>
+    </div>
+  </div>
+
+  <!-- Conflict Alert -->
+  <div class="conflict-alert" *ngIf="conflicts.length > 0">
+    <div class="conflict-icon">⚠️</div>
+    <div class="conflict-text">
+      <strong>{{ conflicts.length }} conflit(s) détecté(s)</strong>
+      <span>Des réservations se chevauchent et nécessitent votre attention</span>
+    </div>
+    <button class="btn-resolve" (click)="showConflicts = true">Résoudre →</button>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-panel">
+    <div class="filter-group">
+      <label class="filter-label">Statut</label>
+      <select class="filter-select" [(ngModel)]="filter.status" (change)="applyFilter()">
+        <option value="">Tous</option>
+        <option value="PENDING">En attente</option>
+        <option value="CONFIRMED">Confirmé</option>
+        <option value="COMPLETED">Terminé</option>
+        <option value="CANCELLED">Annulé</option>
+        <option value="REJECTED">Refusé</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">Type</label>
+      <select class="filter-select" [(ngModel)]="filter.type" (change)="applyFilter()">
+        <option value="">Tous</option>
+        <option value="ONE_TO_ONE">One-to-One</option>
+        <option value="GROUP">Groupe</option>
+        <option value="INFO_SESSION">Session Info</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <label class="filter-label">Date</label>
+      <input type="date" class="filter-input" [(ngModel)]="filter.date" (change)="applyFilter()">
+    </div>
+    <div class="filter-group search-group">
+      <label class="filter-label">Recherche</label>
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" class="search-input" [(ngModel)]="filter.search" (input)="applyFilter()" placeholder="ID, étudiant, tuteur...">
+      </div>
+    </div>
+    <button class="btn-reset" (click)="resetFilter()">↺ Réinitialiser</button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loader-ring"></div>
+    <p>Chargement...</p>
+  </div>
+
+  <!-- Bookings Table -->
+  <div class="table-wrapper" *ngIf="!isLoading">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Étudiant</th>
+          <th>Tuteur</th>
+          <th>Type</th>
+          <th>Date & Heure</th>
+          <th>Statut</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let b of filteredBookings" [class.conflict-row]="isConflict(b)">
+          <td>
+            <span class="booking-id">#{{ b.id }}</span>
+            <span class="conflict-tag" *ngIf="isConflict(b)">⚠️ Conflit</span>
+          </td>
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar student">{{ getInitial('S', b.studentId) }}</div>
+              <span>Étudiant #{{ b.studentId }}</span>
+            </div>
+          </td>
+          <td>
+            <div class="user-cell">
+              <div class="user-avatar tutor">{{ getInitial('T', b.tutorId) }}</div>
+              <span>Tuteur #{{ b.tutorId }}</span>
+            </div>
+          </td>
+          <td>
+            <span class="type-badge">{{ getTypeLabel(b.type) }}</span>
+          </td>
+          <td>
+            <div class="date-cell">
+              <span class="date-val">{{ b.sessionDate | date:'d MMM y' }}</span>
+              <span class="time-val">{{ b.startTime | slice:0:5 }} – {{ b.endTime | slice:0:5 }}</span>
+            </div>
+          </td>
+          <td>
+            <span class="status-badge" [ngClass]="b.status?.toLowerCase()">
+              {{ getStatusIcon(b.status) }} {{ getStatusLabel(b.status) }}
+            </span>
+          </td>
+          <td>
+            <div class="action-btns">
+              <button class="action-btn confirm" *ngIf="b.status === 'PENDING'"
+                      (click)="confirmBooking(b.id)" title="Confirmer">✅</button>
+              <button class="action-btn cancel" *ngIf="b.status !== 'COMPLETED' && b.status !== 'CANCELLED' && b.status !== 'REJECTED'"
+                      (click)="cancelBooking(b.id)" title="Annuler">❌</button>
+              <button class="action-btn history" (click)="viewHistory(b.id)" title="Historique">📜</button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="table-empty" *ngIf="filteredBookings.length === 0">
+      <div class="empty-icon">🔍</div>
+      <span>Aucune réservation ne correspond aux filtres</span>
+    </div>
+  </div>
+
+  <!-- Conflicts Panel -->
+  <div class="modal-overlay" *ngIf="showConflicts" (click)="showConflicts = false">
+    <div class="conflict-modal" (click)="$event.stopPropagation()">
+      <div class="modal-header warning">
+        <h3>⚠️ Conflits de réservation</h3>
+        <button class="modal-close" (click)="showConflicts = false">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="conflict-pair" *ngFor="let pair of conflicts">
+          <div class="conflict-info">
+            <div class="conflict-label">Réservation #{{ pair[0].id }}</div>
+            <div>Tuteur #{{ pair[0].tutorId }} · {{ pair[0].sessionDate | date:'d MMM' }} · {{ pair[0].startTime | slice:0:5 }} – {{ pair[0].endTime | slice:0:5 }}</div>
+          </div>
+          <div class="vs-badge">VS</div>
+          <div class="conflict-info">
+            <div class="conflict-label">Réservation #{{ pair[1].id }}</div>
+            <div>Étudiant #{{ pair[1].studentId }} · {{ pair[1].sessionDate | date:'d MMM' }} · {{ pair[1].startTime | slice:0:5 }} – {{ pair[1].endTime | slice:0:5 }}</div>
+          </div>
+          <div class="conflict-resolve-btns">
+            <button class="btn-keep" (click)="resolveConflict(pair, pair[0].id)">Garder #{{ pair[0].id }}</button>
+            <button class="btn-keep" (click)="resolveConflict(pair, pair[1].id)">Garder #{{ pair[1].id }}</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

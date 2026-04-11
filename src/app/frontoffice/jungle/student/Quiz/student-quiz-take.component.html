@@ -1,0 +1,146 @@
+<div class="quiz-shell">
+
+  <!-- Loading -->
+  <div class="loading-overlay" *ngIf="loading">
+    <div class="loader-dots">
+      <span></span><span></span><span></span>
+    </div>
+    <p>Loading quiz…</p>
+  </div>
+
+  <!-- Animation Start -->
+  <div class="lottie-overlay" *ngIf="showStartAnim">
+    <ng-lottie [options]="lottieStart" width="300px" height="300px"></ng-lottie>
+    <h2 class="lottie-text">Get Ready!</h2>
+  </div>
+
+  <!-- Quiz en cours -->
+  <ng-container *ngIf="!loading && !showResult">
+
+    <div class="quiz-frame">
+
+      <!-- Top progress dots -->
+      <div class="step-dots">
+        <div class="step-dot" *ngFor="let q of questions; let i = index" [class.done]="i < currentIndex"
+          [class.active]="i === currentIndex">
+        </div>
+      </div>
+
+      <!-- Timer + Lives row -->
+      <div class="meta-row">
+        <div class="lives-row">
+          <span *ngFor="let l of livesArray; let i = index" class="heart" [class.lost]="i >= livesRemaining">❤</span>
+        </div>
+        <div class="timer-pill" [class.warning]="timeLeft <= 60">
+          ⏱ {{ formatTime(timeLeft) }}
+        </div>
+        <div class="step-label">{{ currentIndex + 1 }} / {{ questions.length }}</div>
+      </div>
+
+      <!-- Quiz title small -->
+      <p class="quiz-name">{{ quiz?.title }}</p>
+
+      <!-- Question -->
+      <div class="question-block" *ngIf="currentQuestion">
+        <div class="question-row">
+          <h2 class="question-text">{{ currentQuestion.text }}</h2>
+          <button class="btn-tts" (click)="speakQuestion()" [class.playing]="ttsService.isPlaying" title="Listen">
+            {{ ttsService.isPlaying ? '⏹' : '🔊' }}
+          </button>
+        </div>
+
+        <!-- Answer pills -->
+        <div class="answers-grid">
+          <button class="answer-pill" *ngFor="let a of currentQuestion.answers; let i = index"
+            [class.selected]="selectedAnswerIndex === i" [class.correct]="showFeedback && a.isCorrect"
+            [class.wrong]="showFeedback && selectedAnswerIndex === i && !a.isCorrect" [disabled]="showFeedback"
+            (click)="selectAnswer(i)">
+            <span class="pill-letter">{{ getAnswerLetter(i) }}</span>
+            <span class="pill-text">{{ a.text }}</span>
+          </button>
+        </div>
+
+        <!-- Feedback -->
+        <div class="feedback-row" *ngIf="showFeedback">
+          <span class="feedback-chip correct" *ngIf="lastAnswerCorrect">
+            Correct! &nbsp;+{{ lastXpEarned }} XP
+          </span>
+          <span class="feedback-chip wrong" *ngIf="!lastAnswerCorrect">
+             Wrong answer
+          </span>
+        </div>
+
+        <!-- Lottie Popups -->
+        <div class="lottie-popup" *ngIf="showCorrectAnim">
+          <ng-lottie [options]="lottieCorrect" width="200px" height="200px"></ng-lottie>
+        </div>
+        <div class="lottie-popup" *ngIf="showWrongAnim">
+          <ng-lottie [options]="lottieWrong" width="200px" height="200px"></ng-lottie>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <div class="quiz-footer">
+        <button class="btn-back-sm" (click)="goBack()">✕</button>
+        <button class="btn-next" [disabled]="selectedAnswerIndex === -1 || isSubmittingAnswer" (click)="submitAnswer()">
+          {{ isSubmittingAnswer ? '…' :
+          currentIndex === questions.length - 1 ? 'Finish ✅' : 'Next' }}
+        </button>
+        <div class="help-btn">?</div>
+      </div>
+
+    </div>
+
+  </ng-container>
+
+  <!-- Game Over -->
+  <div class="result-shell" *ngIf="showResult && isGameOver">
+    <div class="result-frame game-over-frame">
+      <div class="result-lottie">
+        <ng-lottie [options]="lottieFail" width="150px" height="150px"></ng-lottie>
+      </div>
+      <h2 class="result-title">Game Over</h2>
+      <p class="result-sub">You ran out of lives</p>
+      <div class="result-score-big">{{ score | number:'1.0-0' }}%</div>
+      <div class="result-actions">
+        <button class="btn-retry" (click)="retry()">🔄 Try Again</button>
+        <button class="btn-quit" (click)="goBack()">← Back</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Final Result -->
+  <div class="result-shell" *ngIf="showResult && !isGameOver">
+    <div class="result-frame" [class.passed-frame]="score >= (quiz?.passingScore || 60)">
+      <div class="result-lottie">
+        <ng-lottie *ngIf="score >= (quiz?.passingScore || 60)" [options]="lottieTrophy" width="150px"
+          height="150px"></ng-lottie>
+        <ng-lottie *ngIf="score < (quiz?.passingScore || 60)" [options]="lottieFail" width="150px"
+          height="150px"></ng-lottie>
+      </div>
+      <h2 class="result-title">
+        {{ score >= (quiz?.passingScore || 60) ? 'Quiz Passed!' : 'Quiz Failed' }}
+      </h2>
+      <div class="result-stats-row">
+        <div class="result-stat">
+          <span class="rs-val">{{ score | number:'1.0-0' }}%</span>
+          <span class="rs-lbl">Score</span>
+        </div>
+        <div class="result-stat">
+          <span class="rs-val accent">⚡{{ xpEarned }}</span>
+          <span class="rs-lbl">XP Earned</span>
+        </div>
+        <div class="result-stat">
+          <span class="rs-val">{{ formatTime(durationSeconds) }}</span>
+          <span class="rs-lbl">Duration</span>
+        </div>
+      </div>
+      <div class="result-actions">
+        <button class="btn-retry" (click)="retry()" *ngIf="canRetry">🔄 Try Again</button>
+        <button class="btn-results" (click)="goToHistory()">📊 My Results</button>
+        <button class="btn-quit" (click)="goBack()">← Back</button>
+      </div>
+    </div>
+  </div>
+
+</div>

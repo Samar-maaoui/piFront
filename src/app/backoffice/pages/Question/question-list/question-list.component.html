@@ -1,0 +1,322 @@
+<p-toast></p-toast>
+<p-confirmDialog></p-confirmDialog>
+
+<section class="question-management">
+  <header class="question-header">
+    <div class="header-content">
+      <div class="title-block">
+        <div class="icon-badge">
+          <i class="fa-solid fa-circle-question"></i>
+        </div>
+        <div>
+          <h1>Gestion des Questions</h1>
+          <p class="subtitle" *ngIf="quizTitle">
+            <i class="fa-solid fa-arrow-right"></i>
+            {{ quizTitle }}
+          </p>
+          <p class="subtitle" *ngIf="!quizTitle">
+            Créez et gérez vos questions
+          </p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button pButton type="button" class="back-btn" (click)="goBack()" *ngIf="showBackButton">
+          <i class="fa-solid fa-arrow-left"></i>
+          <span>Retour</span>
+        </button>
+        <button pButton type="button" class="create-btn" (click)="openCreate()" [disabled]="!quizId">
+          <i class="fa-solid fa-plus"></i>
+          <span>Nouvelle question</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Filtres et recherche -->
+    <div class="filters-bar" *ngIf="questions.length > 0">
+      <div class="search-box">
+        <i class="fa-solid fa-magnifying-glass"></i>
+        <input 
+          type="text" 
+          [(ngModel)]="searchTerm" 
+          (ngModelChange)="filterQuestions()"
+          placeholder="Rechercher une question..."
+        >
+      </div>
+      <div class="filter-options">
+        <select [(ngModel)]="pointsFilter" (ngModelChange)="filterQuestions()">
+          <option value="all">Tous les points</option>
+          <option value="5">5 points</option>
+          <option value="10">10 points</option>
+          <option value="15">15 points</option>
+          <option value="20">20 points</option>
+        </select>
+        <select [(ngModel)]="correctFilter" (ngModelChange)="filterQuestions()">
+          <option value="all">Toutes les réponses</option>
+          <option value="single">Choix unique</option>
+          <option value="multiple">Choix multiples</option>
+        </select>
+      </div>
+    </div>
+  </header>
+
+  <!-- Statistiques -->
+  <div class="questions-stats" *ngIf="filteredQuestions.length > 0">
+    <div class="stat-card">
+      <i class="fa-solid fa-list"></i>
+      <div class="stat-info">
+        <span class="stat-value">{{ filteredQuestions.length }}</span>
+        <span class="stat-label">Question{{ filteredQuestions.length > 1 ? 's' : '' }}</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <i class="fa-solid fa-star"></i>
+      <div class="stat-info">
+        <span class="stat-value">{{ totalPoints }}</span>
+        <span class="stat-label">Points totaux</span>
+      </div>
+    </div>
+    <div class="stat-card">
+      <i class="fa-solid fa-check-circle"></i>
+      <div class="stat-info">
+        <span class="stat-value">{{ totalAnswers }}</span>
+        <span class="stat-label">Réponses</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- État de chargement -->
+  <p *ngIf="loading" class="loading-msg">
+    <i class="fa-solid fa-spinner fa-spin"></i>
+    Chargement des questions...
+  </p>
+
+  <!-- Liste des questions -->
+  <div class="questions-container" *ngIf="filteredQuestions.length > 0 && !loading">
+    <!-- En-tête de liste -->
+    <div class="list-header">
+      <div class="header-cell order">#</div>
+      <div class="header-cell question">Question</div>
+      <div class="header-cell answers">Réponses</div>
+      <div class="header-cell points">Points</div>
+      <div class="header-cell actions">Actions</div>
+    </div>
+
+    <!-- Liste des questions -->
+    <div class="questions-list" cdkDropList (cdkDropListDropped)="onQuestionDrop($event)">
+      <div 
+        class="question-item" 
+        *ngFor="let question of filteredQuestions; let i = index"
+        [class.expanded]="expandedQuestionId === question.id"
+        cdkDrag
+      >
+        <!-- Handle de drag -->
+        <div class="drag-handle" cdkDragHandle *ngIf="!searchTerm">
+          <i class="fa-solid fa-grip-vertical"></i>
+        </div>
+
+        <!-- Contenu principal -->
+        <div class="question-content" (click)="toggleExpand(question.id!)">
+          <div class="order-cell">
+            <span class="order-badge">{{ i + 1 }}</span>
+          </div>
+          
+          <div class="question-cell">
+            <div class="question-text">
+              {{ question.text }}
+              <span class="question-id" *ngIf="question.id">#{{ question.id }}</span>
+            </div>
+            <div class="question-tags">
+              <span class="tag" [class.multiple]="hasMultipleCorrectAnswers(question)">
+                <i class="fa-solid" [class.fa-circle]="!hasMultipleCorrectAnswers(question)" [class.fa-circle-check]="hasMultipleCorrectAnswers(question)"></i>
+                {{ hasMultipleCorrectAnswers(question) ? 'Choix multiples' : 'Choix unique' }}
+              </span>
+            </div>
+          </div>
+
+          <div class="answers-cell">
+            <div class="answers-preview">
+              <div class="answers-bubbles">
+                <span 
+                  class="answer-bubble" 
+                  *ngFor="let answer of question.answers | slice:0:3"
+                  [class.correct]="answer.isCorrect"
+                  [title]="answer.text"
+                >
+                  {{ answer.text | slice:0:2 }}...
+                </span>
+                <span class="more-badge" *ngIf="question.answers && question.answers.length > 3">
+                  +{{ question.answers.length - 3 }}
+                </span>
+              </div>
+              <span class="answers-count">{{ question.answers?.length || 0 }} réponse(s)</span>
+            </div>
+          </div>
+
+          <div class="points-cell">
+            <span class="points-badge" [class.high]="question.points >= 15">
+              {{ question.points }} pts
+            </span>
+          </div>
+
+          <div class="actions-cell" (click)="$event.stopPropagation()">
+            <button class="action-btn edit" (click)="openEdit(question)" title="Modifier">
+              <i class="fa-solid fa-pen"></i>
+            </button>
+            <button class="action-btn duplicate" (click)="duplicateQuestion(question)" title="Dupliquer">
+              <i class="fa-solid fa-copy"></i>
+            </button>
+            <button class="action-btn delete" (click)="confirmDelete(question, $event)" title="Supprimer">
+              <i class="fa-solid fa-trash"></i>
+            </button>
+            <button class="action-btn expand" [class.expanded]="expandedQuestionId === question.id">
+              <i class="fa-solid fa-chevron-down"></i>
+            </button>
+          </div>
+        </div>
+
+        <!-- Détails expandés -->
+        <div class="question-details" *ngIf="expandedQuestionId === question.id">
+          <div class="details-header">
+            <h4>Détails des réponses</h4>
+            <span class="details-hint">Cliquez sur une réponse pour la voir en détail</span>
+          </div>
+          
+          <div class="answers-grid" cdkDropList (cdkDropListDropped)="onAnswerDrop(question, $event)">
+            <div 
+              class="answer-detail-card"
+              *ngFor="let answer of question.answers; let j = index"
+              [class.correct]="answer.isCorrect"
+              cdkDrag
+            >
+              <div class="answer-indicator">
+                <span class="answer-letter">{{ getLetter(j) }}</span>
+                <span class="answer-status">
+                  <i class="fa-solid"
+                     [class.fa-check-circle]="answer.isCorrect"
+                     [class.fa-circle]="!answer.isCorrect"
+                     (click)="toggleAnswerCorrect(question, j)"
+                     title="Marquer comme correcte">
+                  </i>
+                </span>
+              </div>
+
+              <input type="text" class="answer-input"
+                     [(ngModel)]="answer.text"
+                     (blur)="updateAnswer(answer)"
+                     placeholder="Texte de la réponse" />
+
+              <div class="answer-order">Ordre: {{ j + 1 }}</div>
+
+              <button class="action-btn delete" title="Supprimer"
+                      (click)="deleteAnswer(question, answer)">
+                <i class="fa-solid fa-trash"></i>
+              </button>
+            </div>
+          </div>
+
+     <div class="answer-actions">
+  <button pButton type="button" class="add-answer-btn" 
+          (click)="openAnswerForm(question, $event)"
+          [disabled]="!question.id || question.showAnswerForm">
+    <i class="fa-solid fa-plus"></i> Ajouter une réponse
+  </button>
+
+  <div *ngIf="question.showAnswerForm" class="answer-form">
+    <input pInputText 
+           [(ngModel)]="question.newAnswerText" 
+           placeholder="Texte de la réponse" />
+    <label>
+      <input type="checkbox" [(ngModel)]="question.newAnswerCorrect" /> Correcte
+    </label>
+    <button pButton type="button" (click)="addAnswer(question)"
+            [disabled]="!question.newAnswerText?.trim()">
+      Confirmer
+    </button>
+    <button pButton type="button" class="p-button-secondary" 
+            (click)="question.showAnswerForm = false; question.newAnswerText = ''">
+      Annuler
+    </button>
+  </div>
+</div>
+          <!-- Métadonnées de la question -->
+          <div class="question-metadata">
+            <div class="metadata-item">
+              <i class="fa-solid fa-hashtag"></i>
+              <span>ID: {{ question.id || 'Non créée' }}</span>
+            </div>
+            <div class="metadata-item">
+              <i class="fa-solid fa-list-ol"></i>
+              <span>Ordre d'affichage: {{ question.orderIndex + 1 }}</span>
+            </div>
+            <div class="metadata-item" *ngIf="question.quizId">
+              <i class="fa-solid fa-question"></i>
+              <span>Quiz #{{ question.quizId }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button 
+        class="page-btn" 
+        [disabled]="currentPage === 0"
+        (click)="changePage(currentPage - 1)"
+      >
+        <i class="fa-solid fa-chevron-left"></i>
+      </button>
+      
+      <span class="page-info">
+        Page {{ currentPage + 1 }} sur {{ totalPages }}
+      </span>
+      
+      <button 
+        class="page-btn" 
+        [disabled]="currentPage === totalPages - 1"
+        (click)="changePage(currentPage + 1)"
+      >
+        <i class="fa-solid fa-chevron-right"></i>
+      </button>
+    </div>
+  </div>
+
+  <!-- État vide -->
+  <div class="empty-state" *ngIf="filteredQuestions.length === 0 && !loading">
+    <div class="empty-icon">
+      <i class="fa-regular fa-circle-question"></i>
+    </div>
+    <h3>
+      {{ searchTerm ? 'Aucune question trouvée' : 'Aucune question pour le moment' }}
+    </h3>
+    <p *ngIf="!quizId">
+      Sélectionnez un quiz pour commencer à ajouter des questions.
+    </p>
+    <p *ngIf="quizId && !searchTerm">
+      Créez votre première question pour ce quiz.
+    </p>
+    <p *ngIf="searchTerm">
+      Aucune question ne correspond à "{{ searchTerm }}"
+    </p>
+    <div class="empty-actions">
+      <button pButton type="button" class="secondary-btn" (click)="clearFilters()" *ngIf="searchTerm">
+        <i class="fa-solid fa-times"></i>
+        Effacer la recherche
+      </button>
+      <button pButton type="button" class="create-first" (click)="openCreate()" [disabled]="!quizId">
+        <i class="fa-solid fa-plus"></i>
+        Créer une question
+      </button>
+    </div>
+  </div>
+</section>
+
+<!-- Formulaire de question -->
+<app-question-form
+  [question]="editingQuestion"
+  [quizId]="quizId"
+  [visible]="showForm"
+  (visibleChange)="showForm = $event"
+  (saved)="onSaved($event)"
+  (cancelled)="onFormCancelled()">
+</app-question-form>

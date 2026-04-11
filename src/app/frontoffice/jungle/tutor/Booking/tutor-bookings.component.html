@@ -1,0 +1,182 @@
+<!-- tutor-bookings.component.html -->
+<div class="page-wrapper">
+
+  <!-- Header -->
+  <div class="page-hero">
+    <div class="hero-left">
+      <div class="hero-badge"> </div>
+      <h1 class="hero-title">Bookings</h1>
+      <p class="hero-subtitle"></p>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="stat-value" style="color:#F6BD60">{{ pendingCount }}</span>
+        <span class="stat-label">ON PENDING</span>
+      </div>
+      <div class="hero-stat">
+        <span class="stat-value" style="color:#4caf83">{{ confirmedCount }}</span>
+        <span class="stat-label">CONFIRMED</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn" *ngFor="let tab of tabs"
+            [class.active]="activeTab === tab.value"
+            (click)="activeTab = tab.value; filterBookings()">
+      {{ tab.icon }} {{ tab.label }}
+      <span class="tab-count">{{ countByStatus(tab.value) }}</span>
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loader-ring"></div>
+    <p>Chargement des réservations...</p>
+  </div>
+
+  <!-- Bookings Grid -->
+  <div class="bookings-grid" *ngIf="!isLoading && filteredBookings.length > 0">
+    <div class="booking-card" *ngFor="let b of filteredBookings"
+         [class.pending]="b.status === 'PENDING'"
+         [class.confirmed]="b.status === 'CONFIRMED'"
+         [class.completed]="b.status === 'COMPLETED'"
+         [class.cancelled]="b.status === 'CANCELLED' || b.status === 'REJECTED'">
+
+      <div class="card-stripe"></div>
+
+      <div class="card-content">
+        <!-- Top row -->
+        <div class="card-top">
+          <div class="student-avatar">{{ getInitial(b.studentId) }}</div>
+          <div class="student-details">
+            <div class="student-name">Étudiant #{{ b.studentId }}</div>
+            <div class="booking-type-label">{{ getTypeLabel(b.type) }}</div>
+          </div>
+          <span class="status-badge" [ngClass]="b.status?.toLowerCase()">
+            {{ getStatusIcon(b.status) }} {{ getStatusLabel(b.status) }}
+          </span>
+        </div>
+
+        <!-- Info grid -->
+        <div class="info-grid">
+          <div class="info-cell">
+            <span class="info-icon"></span>
+            <div>
+              <div class="info-label">Date</div>
+              <div class="info-val">{{ b.sessionDate | date:'EEE d MMM y' }}</div>
+            </div>
+          </div>
+          <div class="info-cell">
+            <span class="info-icon"></span>
+            <div>
+              <div class="info-label">Horaire</div>
+              <div class="info-val">{{ b.startTime | slice:0:5 }} – {{ b.endTime | slice:0:5 }}</div>
+            </div>
+          </div>
+          <div class="info-cell" *ngIf="b.createdAt">
+            <span class="info-icon"></span>
+            <div>
+              <div class="info-label">Demandé le</div>
+              <div class="info-val">{{ b.createdAt | date:'d MMM y' }}</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="booking-notes" *ngIf="b.notes">
+          <span class="notes-icon">💬</span>
+          <span>{{ b.notes }}</span>
+        </div>
+
+        <!-- Jitsi Link -->
+        <div class="jitsi-bar" *ngIf="b.status === 'CONFIRMED' && b.session?.meetingLink">
+          <span class="jitsi-dot"></span>
+          <div>
+            <div class="jitsi-title">Redy sessions</div>
+            <a [href]="b.session?.meetingLink || '#'" target="_blank" class="jitsi-url">{{ b.session?.meetingLink }}</a>
+          </div>
+          <a [href]="b.session?.meetingLink || '#'" target="_blank" class="btn-join">Rejoindre</a>
+        </div>
+
+        <!-- Actions: PENDING -->
+        <div class="card-actions" *ngIf="b.status === 'PENDING'">
+          <button class="btn-accept" (click)="confirmBooking(b)" [disabled]="isLoading">
+            ✅ Accepter
+          </button>
+          <button class="btn-reject" (click)="openRejectModal(b)">
+            ❌ Refuser
+          </button>
+        </div>
+
+        <!-- Actions: CONFIRMED -->
+        <div class="card-actions secondary" *ngIf="b.status === 'CONFIRMED'">
+          <button class="btn-cancel" (click)="cancelBooking(b.id)">
+            ✕ Annuler cette session
+          </button>
+        </div>
+
+        <!-- Feedback if DONE -->
+        <div class="feedback-row" *ngIf="b.status === 'COMPLETED' && b.session?.feedback">
+          <div class="stars">
+            <span *ngFor="let i of [1,2,3,4,5]"
+                  [style.color]="i <= (b.session?.feedback?.rating || 0) ? '#F6BD60' : '#ddd'">★</span>
+          </div>
+          <span class="feedback-text">{{ b.session?.feedback?.comment || 'Pas de commentaire' }}</span>
+        </div>
+        <div class="awaiting-feedback" *ngIf="b.status === 'COMPLETED' && !b.session?.feedback">
+          Wainting for student feedback...
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <ng-template #empty>
+    <div class="empty-state">
+      <div class="empty-icon"></div>
+      <h3>Aucune réservation</h3>
+      <p>Les nouvelles demandes de vos étudiants apparaîtront ici</p>
+    </div>
+  </ng-template>
+  <div *ngIf="!isLoading && filteredBookings.length === 0" class="empty-state">
+    <div class="empty-icon"></div>
+    <h3>Aucune réservation</h3>
+    <p>Les nouvelles demandes de vos étudiants apparaîtront ici</p>
+  </div>
+
+
+</div>
+
+<!-- Reject Modal -->
+<div class="modal-overlay" *ngIf="showRejectModal" (click)="closeRejectModal()">
+  <div class="modal-card" (click)="$event.stopPropagation()">
+    <div class="modal-header danger">
+      <h3>❌ Refuser la réservation</h3>
+      <button class="modal-close" (click)="closeRejectModal()">×</button>
+    </div>
+    <div class="modal-body">
+      <p class="modal-intro">Sélectionnez ou saisissez un motif de refus :</p>
+      <div class="reason-chips">
+        <button class="reason-chip" *ngFor="let r of rejectReasons"
+                [class.selected]="selectedReason === r"
+                (click)="selectedReason = r; customReason = ''">
+          {{ r }}
+        </button>
+      </div>
+      <textarea class="reason-textarea" [(ngModel)]="customReason"
+                placeholder="Ou indiquez un motif personnalisé..."
+                (focus)="selectedReason = ''">
+      </textarea>
+    </div>
+    <div class="modal-footer">
+      <button class="btn-secondary" (click)="closeRejectModal()">Annuler</button>
+      <button class="btn-danger-confirm" (click)="confirmReject()"
+              [disabled]="!selectedReason && !customReason.trim()">
+        Confirmer le refus
+      </button>
+    </div>
+  </div>
+</div>

@@ -1,0 +1,222 @@
+<div class="booking-form-container">
+
+  <div class="header">
+    <button class="btn-back" (click)="goBack()">← Back</button>
+    <h1>Book a session</h1>
+  </div>
+
+  <div *ngIf="loading" class="state-loading">Loading...</div>
+
+  <ng-container *ngIf="!loading && tutor">
+
+    <!-- Tutor Card -->
+    <div class="tutor-card">
+      <div class="tutor-avatar">{{ tutor.firstName[0] }}{{ tutor.lastName[0] }}</div>
+      <div class="tutor-info">
+        <h3>{{ tutor.firstName }} {{ tutor.lastName }}</h3>
+        <p class="tutor-spec">{{ tutor.specialization.join(', ') }}</p>
+        <span class="tutor-rating">⭐ {{ tutor.rating }} ({{ tutor.reviewCount }} reviews)</span>
+      </div>
+      <div class="tutor-rate">{{ tutor.hourlyRate }} DT/h</div>
+    </div>
+
+    <!-- Mode Toggle -->
+    <div class="mode-toggle">
+      <button class="mode-btn" [class.active]="mode === 'single'" (click)="mode = 'single'">
+        Single session
+      </button>
+      <button class="mode-btn" [class.active]="mode === 'pack'" (click)="mode = 'pack'">
+        Session pack
+        <span class="badge-discount">up to -30%</span>
+      </button>
+    </div>
+
+    <!-- SINGLE SESSION — Reactive Form -->
+    <form *ngIf="mode === 'single'" [formGroup]="singleForm" (ngSubmit)="submitBooking()" class="booking-form" novalidate>
+
+      <!-- Type -->
+      <div class="form-group">
+        <label>Session type</label>
+        <select formControlName="type" [class.is-invalid]="f['type'].invalid && f['type'].touched">
+          <option value="ONE_TO_ONE">One-to-One</option>
+          <option value="GROUP">Group session</option>
+          <option value="INFO_SESSION">Info session</option>
+        </select>
+        <span class="field-error" *ngIf="f['type'].hasError('required') && f['type'].touched">
+          This field is required.
+        </span>
+      </div>
+
+      <!-- Date -->
+      <div class="form-group">
+        <label>Session date</label>
+        <input type="date"
+               formControlName="sessionDate"
+               [min]="minDate"
+               (change)="onDateChange()"
+               [class.is-invalid]="f['sessionDate'].invalid && f['sessionDate'].touched">
+        <span class="field-error" *ngIf="f['sessionDate'].hasError('required') && f['sessionDate'].touched">
+          Date is required.
+        </span>
+        <span class="field-error" *ngIf="f['sessionDate'].hasError('pastDate') && f['sessionDate'].touched">
+          Date must be today or in the future.
+        </span>
+      </div>
+
+      <!-- Time Slots -->
+      <div class="form-group" *ngIf="availableSlots.length > 0">
+        <label>Available time slots</label>
+        <div class="time-slots">
+          <button type="button" *ngFor="let slot of availableSlots"
+                  class="time-slot" [class.selected]="selectedSlot?.startTime === slot.startTime"
+                  (click)="selectSlot(slot)">
+            {{ slot.startTime }} – {{ slot.endTime }}
+          </button>
+        </div>
+        <span class="field-error" *ngIf="slotTouched && !selectedSlot">
+          Please select a time slot.
+        </span>
+      </div>
+
+      <div *ngIf="availableSlots.length === 0 && f['sessionDate'].value" class="no-slots">
+        No available slots for this date.
+      </div>
+
+      <!-- Notes -->
+      <div class="form-group">
+        <label>Message to tutor <span class="opt">(optional)</span></label>
+        <textarea formControlName="notes"
+                  placeholder="Describe your learning goals..." rows="3"
+                  [class.is-invalid]="f['notes'].invalid && f['notes'].touched"></textarea>
+        <span class="field-error" *ngIf="f['notes'].hasError('maxlength') && f['notes'].touched">
+          Maximum 500 characters.
+        </span>
+      </div>
+
+      <!-- Summary -->
+      <div class="booking-summary" *ngIf="selectedSlot && f['sessionDate'].valid">
+        <div class="summary-row"><span>Date</span><span>{{ formatDate(f['sessionDate'].value) }}</span></div>
+        <div class="summary-row"><span>Time</span><span>{{ selectedSlot.startTime }} – {{ selectedSlot.endTime }}</span></div>
+        <div class="summary-row"><span>Duration</span><span>{{ calculateDuration() }}h</span></div>
+        <div class="summary-row total"><span>Total</span><span>{{ calculateTotal() }} DT</span></div>
+      </div>
+
+      <button type="submit" class="btn-submit" [disabled]="submitting">
+        {{ submitting ? 'Booking...' : 'Confirm booking' }}
+      </button>
+
+      <p class="info-note">The tutor will receive your request and can accept or decline it.</p>
+    </form>
+
+    <!-- PACK DE SESSIONS (template-driven) -->
+    <div *ngIf="mode === 'pack'" class="pack-section">
+
+      <div class="pack-cards">
+        <div *ngFor="let pack of packOptions"
+             class="pack-card"
+             [class.selected]="selectedPack?.sessions === pack.sessions"
+             (click)="selectPack(pack)">
+          <div class="pack-sessions">{{ pack.sessions }}</div>
+          <div class="pack-label">sessions</div>
+          <div class="pack-discount">-{{ pack.discount }}%</div>
+          <div class="pack-savings" *ngIf="tutor">
+            Save {{ (tutor.hourlyRate * pack.sessions * pack.discount / 100).toFixed(0) }} DT
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="selectedPack" class="pack-form">
+        <div class="form-group">
+          <label>Session type</label>
+          <select [(ngModel)]="packType" name="packType">
+            <option value="ONE_TO_ONE">One-to-One</option>
+            <option value="GROUP">Group session</option>
+          </select>
+        </div>
+
+        <div class="form-row">
+          <div class="form-group">
+            <label>First session date</label>
+            <input type="date" [(ngModel)]="packStartDate" name="packStartDate"
+                   [min]="minDate" (change)="onPackDateChange()">
+          </div>
+          <div class="form-group">
+            <label>Frequency</label>
+            <select [(ngModel)]="packFrequency" name="packFrequency" (change)="onFrequencyChange()">
+              <option value="weekly">Every week</option>
+              <option value="biweekly">Every 2 weeks</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group" *ngIf="packSlots.length > 0">
+          <label>Time slot (applied to all sessions)</label>
+          <div class="time-slots">
+            <button type="button" *ngFor="let slot of packSlots"
+                    class="time-slot" [class.selected]="packSelectedSlot?.startTime === slot.startTime"
+                    (click)="selectPackSlot(slot)">
+              {{ slot.startTime }} – {{ slot.endTime }}
+            </button>
+          </div>
+        </div>
+
+        <div *ngIf="packSlots.length === 0 && packStartDate" class="no-slots">
+          No available slots for this date.
+        </div>
+
+        <div class="form-group" *ngIf="scheduledSessions.length > 0">
+          <label>Message <span class="opt">(optional)</span></label>
+          <textarea [(ngModel)]="packNotes" name="packNotes"
+                    placeholder="Describe your goals for this pack..." rows="2"></textarea>
+        </div>
+
+        <div *ngIf="scheduledSessions.length > 0" class="schedule-preview">
+          <h4>Automatic schedule — {{ selectedPack.sessions }} sessions</h4>
+          <div class="sessions-timeline">
+            <div *ngFor="let session of scheduledSessions; let i = index" class="timeline-item">
+              <div class="timeline-index">{{ i + 1 }}</div>
+              <div class="timeline-details">
+                <span class="session-date">{{ formatDateShort(session.date) }}</span>
+                <span class="session-time">{{ session.startTime }} – {{ session.endTime }}</span>
+              </div>
+              <div class="timeline-price">
+                <span class="price-original">{{ session.priceOriginal.toFixed(0) }} DT</span>
+                <span class="price-discounted">{{ session.priceDiscounted.toFixed(0) }} DT</span>
+              </div>
+            </div>
+          </div>
+
+          <div class="pack-summary">
+            <div class="pack-summary-row">
+              <span>Original price</span>
+              <span class="strike">{{ getPackTotalOriginal().toFixed(0) }} DT</span>
+            </div>
+            <div class="pack-summary-row discount-row">
+              <span>Discount {{ selectedPack.discount }}%</span>
+              <span class="savings-amount">-{{ getPackSavings().toFixed(0) }} DT</span>
+            </div>
+            <div class="pack-summary-row total-row">
+              <span>Total to pay</span>
+              <span class="total-amount">{{ getPackTotalDiscounted().toFixed(0) }} DT</span>
+            </div>
+          </div>
+
+          <div *ngIf="submitting" class="submit-progress">
+            <div class="progress-bar"><div class="progress-fill" [style.width.%]="packSubmitProgress"></div></div>
+            <p>Creating bookings... {{ packSubmitProgress }}%</p>
+          </div>
+
+          <button class="btn-submit btn-pack" [disabled]="submitting" (click)="submitPack()">
+            {{ submitting ? 'Creating...' : 'Book pack of ' + selectedPack.sessions + ' sessions' }}
+          </button>
+          <p class="info-note">{{ selectedPack.sessions }} bookings will be created. The tutor must confirm each one.</p>
+        </div>
+      </div>
+    </div>
+
+  </ng-container>
+
+  <div *ngIf="errorMessage" class="error-msg">{{ errorMessage }}</div>
+  <div *ngIf="successMessage" class="success-msg">{{ successMessage }}</div>
+
+</div>

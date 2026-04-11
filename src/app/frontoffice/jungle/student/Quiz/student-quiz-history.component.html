@@ -1,0 +1,180 @@
+<div class="dashboard">
+
+  
+
+  <!-- Main -->
+  <main class="main">
+
+    <!-- Top bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <h1 class="greeting">My Results</h1>
+        <p class="subtitle">Track your quiz performance</p>
+      </div>
+      <div class="topbar-right">
+        <div class="xp-chip" *ngIf="stats">
+          <span class="xp-icon">⚡</span>
+          <span class="xp-val">{{ stats.totalXp }} XP</span>
+          <span class="xp-level">Lv.{{ stats.level }}</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- KPI Cards -->
+    <section class="kpi-row" *ngIf="stats">
+      <div class="kpi-card kpi-1">
+        <div class="kpi-icon">✅</div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ stats.completed }}</span>
+          <span class="kpi-label">Completed</span>
+        </div>
+        <div class="kpi-glow"></div>
+      </div>
+      <div class="kpi-card kpi-2">
+        <div class="kpi-icon">⭐</div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ stats.perfectScores }}</span>
+          <span class="kpi-label">Perfect Scores</span>
+        </div>
+        <div class="kpi-glow"></div>
+      </div>
+      <div class="kpi-card kpi-3">
+        <div class="kpi-icon">🔥</div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ stats.currentStreak }}</span>
+          <span class="kpi-label">Day Streak</span>
+        </div>
+        <div class="kpi-glow"></div>
+      </div>
+      <div class="kpi-card kpi-4">
+        <div class="kpi-icon">⚡</div>
+        <div class="kpi-body">
+          <span class="kpi-value">{{ stats.xpToNextLevel }}</span>
+          <span class="kpi-label">XP to Next Level</span>
+        </div>
+        <div class="kpi-glow"></div>
+      </div>
+    </section>
+
+    <!-- Content grid -->
+    <section class="content-grid">
+
+      <!-- Score chart area -->
+      <div class="chart-panel" *ngIf="attempts.length > 0">
+        <div class="panel-header">
+          <span class="panel-title">Score History</span>
+          <span class="panel-sub">{{ attempts.length }} attempts</span>
+        </div>
+        <div class="chart-bars">
+          <div class="chart-bar-wrap" *ngFor="let a of attempts.slice(-10); let i = index">
+            <div class="chart-bar"
+                 [style.height.%]="a.percentage || 0"
+                 [class.bar-pass]="a.isPassed"
+                 [class.bar-fail]="!a.isPassed"
+                 [title]="(a.percentage | number:'1.0-0') + '%'">
+            </div>
+            <span class="bar-label">{{ i + 1 }}</span>
+          </div>
+        </div>
+      
+      </div>
+
+      <!-- Latest attempt highlight -->
+      <div class="latest-panel" *ngIf="attempts.length > 0">
+        <div class="panel-header">
+          <span class="panel-title">Latest Attempt</span>
+        </div>
+        <div class="latest-score-ring">
+          <svg viewBox="0 0 100 100" class="ring-svg">
+            <circle cx="50" cy="50" r="40" class="ring-bg"/>
+            <circle cx="50" cy="50" r="40" class="ring-fill"
+                    [style.stroke-dashoffset]="251 - (2.51 * (attempts[0]?.percentage || 0))"/>
+          </svg>
+          <div class="ring-label">
+            <span class="ring-val">{{ attempts[0]?.percentage | number:'1.0-0' }}%</span>
+            <span class="ring-sub">{{ attempts[0]?.isPassed ? 'Passed ✅' : 'Failed ❌' }}</span>
+          </div>
+        </div>
+        <div class="latest-details">
+          <div class="detail-row">
+            <span>Quiz</span>
+            <span>{{ attempts[0]?.quizTitle || 'Quiz #' + attempts[0]?.quizId }}</span>
+          </div>
+          <div class="detail-row">
+            <span>XP Earned</span>
+            <span>⚡ {{ attempts[0]?.xpEarned || 0 }}</span>
+          </div>
+          <div class="detail-row">
+            <span>Duration</span>
+            <span>{{ formatDuration(attempts[0]?.durationSeconds) }}</span>
+          </div>
+        </div>
+      </div>
+
+    </section>
+
+    <!-- History Table -->
+    <section class="table-section" *ngIf="!loading && attempts.length > 0">
+      <div class="panel-header">
+        <span class="panel-title">Full History</span>
+      </div>
+      <div class="table-wrap">
+        <table class="history-table">
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Quiz</th>
+              <th>Score</th>
+              <th>Result</th>
+              <th>XP</th>
+              <th>Duration</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let a of attempts; let i = index">
+              <td class="td-num">{{ i + 1 }}</td>
+              <td class="td-quiz">{{ a.quizTitle || 'Quiz #' + a.quizId }}</td>
+              <td class="td-score">
+                <div class="inline-bar">
+                  <div class="inline-fill"
+                       [style.width.%]="a.percentage || 0"
+                       [class.bar-pass]="a.isPassed"
+                       [class.bar-fail]="!a.isPassed">
+                  </div>
+                </div>
+                <span class="score-num">{{ a.percentage | number:'1.0-0' }}%</span>
+              </td>
+              <td>
+                <span class="badge"
+                      [class.badge-pass]="a.isPassed"
+                      [class.badge-fail]="!a.isPassed && a.status === 'COMPLETED'"
+                      [class.badge-go]="a.status === 'GAME_OVER'"
+                      [class.badge-to]="a.status === 'TIMED_OUT'">
+                  {{ a.isPassed ? '✅ Passed' : a.status === 'GAME_OVER' ? '💔 Game Over' : a.status === 'TIMED_OUT' ? '⏰ Timeout' : '❌ Failed' }}
+                </span>
+              </td>
+              <td class="td-xp">⚡ {{ a.xpEarned || 0 }}</td>
+              <td>{{ formatDuration(a.durationSeconds) }}</td>
+              <td class="td-date">{{ a.completedAt | date:'dd MMM HH:mm' }}</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- Empty -->
+    <div class="empty-state" *ngIf="!loading && attempts.length === 0">
+      <div class="empty-icon">📭</div>
+      <p>No quiz attempts yet</p>
+      <button class="btn-start" (click)="goBack()">▶ Start a Quiz</button>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <p>Loading your results...</p>
+    </div>
+
+  </main>
+</div>

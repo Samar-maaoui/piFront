@@ -1,0 +1,168 @@
+<div class="page-wrapper">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">Quiz Management</h1>
+      <p class="page-subtitle">Overview of all quizzes across the platform</p>
+    </div>
+    <div class="header-actions">
+      <div class="search-box">
+        <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#6a8a8a" stroke-width="2.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="Search quiz..."
+               [(ngModel)]="searchTerm"
+               (ngModelChange)="filterQuizzes()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#2D5757" stroke-width="2" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">{{ totalQuizzes }}</div>
+        <div class="stat-label">Total Quizzes</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#22c55e" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">{{ publishedCount }}</div>
+        <div class="stat-label">Published</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">{{ draftCount }}</div>
+        <div class="stat-label">Drafts</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#3b82f6" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+      </div>
+      <div class="stat-info">
+        <div class="stat-value">{{ totalAttempts }}</div>
+        <div class="stat-label">Total Attempts</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <button class="filter-btn" *ngFor="let f of filters"
+            [class.active]="activeFilter === f.value"
+            (click)="activeFilter = f.value; filterQuizzes()">
+      {{ f.label }}
+    </button>
+    <div class="filter-spacer"></div>
+    <select class="level-select" [(ngModel)]="levelFilter" (ngModelChange)="filterQuizzes()">
+      <option value="">All Levels</option>
+      <option *ngFor="let l of levels" [value]="l">{{ l }}</option>
+    </select>
+  </div>
+
+  <!-- Quiz Table -->
+  <div class="table-wrapper" *ngIf="filteredQuizzes.length > 0; else empty">
+    <table class="quiz-table">
+      <thead>
+        <tr>
+          <th>Quiz</th>
+          <th>Level</th>
+          <th>Duration</th>
+          <th>Pass Score</th>
+          <th>Status</th>
+          <th>Attempts</th>
+          <th>Created on</th>
+          <th>Created</th>
+          <th style="min-width:210px">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let q of filteredQuizzes; let i = index"
+            class="table-row"
+            [style.animation-delay]="i * 0.05 + 's'">
+
+          <!-- Quiz title -->
+          <td class="row-title">
+            <div class="quiz-title">{{ q.title }}</div>
+            <div class="quiz-meta">
+              <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+              {{ q.questions?.length || 0 }} questions
+            </div>
+          </td>
+
+          <!-- Level -->
+          <td>
+            <span class="level-badge level-{{ q.level?.toLowerCase() }}">{{ q.level }}</span>
+          </td>
+
+          <!-- Duration -->
+          <td class="icon-cell">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6a8a8a" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            {{ q.duration }} min
+          </td>
+
+          <!-- Pass Score -->
+          <td class="icon-cell">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#6a8a8a" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="20 6 9 17 4 12"/></svg>
+            {{ q.passingScore }}%
+          </td>
+
+          <!-- Status -->
+          <td>
+            <span class="status-badge" [ngClass]="q.status?.toLowerCase()">
+              <span class="status-dot"></span>
+              {{ q.status }}
+            </span>
+          </td>
+
+          <!-- Attempts -->
+          <td>
+            <span class="attempts-count">{{ q.attemptsCount || 0 }}</span>
+          </td>
+
+          <!-- Avg Score -->
+          <td>
+            <span class="avg-score" [ngClass]="getScoreClass(q.avgScore)">
+              {{ q.avgScore ? (q.avgScore | number:'1.0-0') + '%' : '—' }}
+            </span>
+          </td>
+
+          <!-- Date -->
+          <td class="date-cell">{{ q.createdAt | date:'dd MMM y' }}</td>
+
+          <!-- Actions -->
+          <td class="actions-cell">
+            <button class="btn-results" [routerLink]="['/admin/quiz', q.id, 'results']">Results</button>
+            <button class="btn-publish" (click)="publishQuiz(q.id)" *ngIf="q.status === 'DRAFT'">Publish</button>
+            <button class="btn-archive" (click)="archiveQuiz(q.id)" *ngIf="q.status === 'PUBLISHED'">Archive</button>
+            <button class="btn-draft"   (click)="setDraft(q.id)"   *ngIf="q.status === 'ARCHIVED'">Draft</button>
+            <button class="btn-delete"  (click)="deleteQuiz(q.id)">Delete</button>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty -->
+  <ng-template #empty>
+    <div class="empty-state">
+      <div class="empty-icon">
+        <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="#d0dcdc" stroke-width="1.5" stroke-linecap="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+      </div>
+      <h3>No quizzes found</h3>
+      <p>Quizzes created by tutors will appear here</p>
+    </div>
+  </ng-template>
+
+</div>

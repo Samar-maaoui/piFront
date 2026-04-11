@@ -1,0 +1,153 @@
+<div class="container-fluid py-4">
+
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold" style="color:#2D5757;">My Availability</h2>
+      <p class="text-muted mb-0">Set your weekly schedule for students</p>
+    </div>
+    <button class="btn btn-jie" (click)="openModal()" *ngIf="perm.canManageAvailability()">+ Add Slot</button>
+  </div>
+
+  <!-- Weekly Calendar Grid -->
+  <div class="av-grid-wrapper mb-4">
+    <div class="av-grid">
+      <div class="av-head-time">Time</div>
+      <div class="av-head" *ngFor="let day of weekDays">{{ day.slice(0,3) }}</div>
+
+      <ng-container *ngFor="let hour of timeSlots; let last = last">
+        <div class="av-time" [class.last]="last">{{ hour }}</div>
+        <div class="av-cell"
+             *ngFor="let day of weekDays"
+             [class.last-row]="last">
+          <div *ngIf="hasSlot(day, hour)"
+               class="av-slot"
+               (click)="openActionModal(getSlot(day, hour))">
+            {{ hour }} – {{ addHour(hour) }}
+          </div>
+        </div>
+      </ng-container>
+    </div>
+
+    <div class="av-legend">
+      <div class="av-legend-item">
+        <div class="av-legend-dot available"></div>
+        <span>Available — click to manage</span>
+      </div>
+      <div class="av-legend-item">
+        <div class="av-legend-dot empty"></div>
+        <span>Not available</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="text-center py-5" *ngIf="availabilities.length === 0">
+    <div class="fs-1">📭</div>
+    <h5 class="text-muted">No availability set</h5>
+    <button class="btn btn-jie mt-2" (click)="openModal()">Add your first slot</button>
+  </div>
+</div>
+
+<!-- Modal Actions (clic sur slot) -->
+<ng-template #actionModal>
+  <div class="modal-header" style="background-color:#2D5757; color:white;">
+    <h5 class="modal-title">{{ selectedSlot?.dayOfWeek }}</h5>
+    <button type="button" class="btn-close btn-close-white" (click)="closeActionModal()"></button>
+  </div>
+  <div class="modal-body">
+    <p class="text-muted small mb-2">
+      {{ selectedSlot?.startTime }} – {{ selectedSlot?.endTime }}
+    </p>
+    <p class="mb-0">
+      <span class="badge"
+            [class.bg-success]="selectedSlot?.available"
+            [class.bg-secondary]="!selectedSlot?.available">
+        {{ selectedSlot?.available ? 'Available' : 'Unavailable' }}
+      </span>
+      <span class="text-muted small ms-2">{{ selectedSlot?.availabilityType }}</span>
+    </p>
+  </div>
+  <div class="modal-footer flex-column gap-2 align-items-stretch" *ngIf="perm.canManageAvailability()">
+    <button type="button" class="btn btn-jie w-100"
+            (click)="editSlot(selectedSlot!); closeActionModal()">
+      ✏️ Edit this slot
+    </button>
+    <button type="button" class="btn btn-outline-secondary w-100"
+            (click)="toggleSlot(selectedSlot!); closeActionModal()">
+      {{ selectedSlot?.available ? '🔒 Mark as unavailable' : '🔓 Mark as available' }}
+    </button>
+    <button type="button" class="btn btn-outline-danger w-100"
+            (click)="deleteSlot(selectedSlot!.id!); closeActionModal()">
+      🗑️ Delete this slot
+    </button>
+  </div>
+</ng-template>
+
+<!-- Modal Add/Edit -->
+<ng-template #slotModal>
+  <div class="modal-header" style="background-color:#2D5757; color:white;">
+    <h5 class="modal-title" id="availability-modal-title">
+      {{ editMode ? 'Edit Slot' : 'Add Availability Slot' }}
+    </h5>
+    <button type="button" class="btn-close btn-close-white" (click)="closeModal()"></button>
+  </div>
+  <div class="modal-body">
+    <form #slotForm="ngForm">
+
+      <div class="mb-3">
+        <label class="form-label fw-semibold">Type</label>
+        <select class="form-select" [(ngModel)]="currentSlot.availabilityType" name="type">
+          <option value="RECURRING">Recurring (every week)</option>
+          <option value="ONE_TIME">One-time (specific date)</option>
+        </select>
+      </div>
+
+      <div class="mb-3" *ngIf="currentSlot.availabilityType === 'RECURRING'">
+        <label class="form-label fw-semibold">Day of Week *</label>
+        <div class="d-flex flex-wrap gap-2">
+          <button type="button" class="btn btn-sm day-btn"
+                  *ngFor="let day of weekDays"
+                  [class.selected]="currentSlot.dayOfWeek === day"
+                  (click)="currentSlot.dayOfWeek = day">
+            {{ day.slice(0,3) }}
+          </button>
+        </div>
+      </div>
+
+      <div class="mb-3" *ngIf="currentSlot.availabilityType === 'ONE_TIME'">
+        <label class="form-label fw-semibold">Specific Date *</label>
+        <input type="date" class="form-control"
+               [(ngModel)]="currentSlot.specificDate" name="specificDate">
+      </div>
+
+      <div class="row g-3 mb-3">
+        <div class="col-6">
+          <label class="form-label fw-semibold">Start Time *</label>
+          <input type="time" class="form-control"
+                 [(ngModel)]="currentSlot.startTime" name="startTime" required>
+        </div>
+        <div class="col-6">
+          <label class="form-label fw-semibold">End Time *</label>
+          <input type="time" class="form-control"
+                 [(ngModel)]="currentSlot.endTime" name="endTime" required>
+        </div>
+      </div>
+
+      <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" id="availableSwitch"
+               [(ngModel)]="currentSlot.available" name="available">
+        <label class="form-check-label fw-semibold" for="availableSwitch">
+          {{ currentSlot.available ? 'Available' : 'Not Available' }}
+        </label>
+      </div>
+
+    </form>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-outline-secondary" (click)="closeModal()">Cancel</button>
+    <button type="button" class="btn btn-jie" (click)="saveSlot()" [disabled]="isLoading">
+      <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+      {{ editMode ? 'Update' : 'Save Slot' }}
+    </button>
+  </div>
+</ng-template>

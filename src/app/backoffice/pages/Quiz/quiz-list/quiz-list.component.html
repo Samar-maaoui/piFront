@@ -1,0 +1,16 @@
+<section class="student-quiz-list">
+  <h2>Quizzes disponibles</h2>
+  <p *ngIf="loading">Chargement...</p>
+
+  <div *ngIf="!loading && quizzes.length === 0" class="empty">
+    Aucun quiz publié pour le moment.
+  </div>
+
+  <ul *ngIf="!loading && quizzes.length > 0" class="quiz-items">
+    <li *ngFor="let quiz of quizzes" class="quiz-item">
+      <h3>{{ quiz.title }}</h3>
+      <p>Niveau : {{ quiz.level }}</p>
+      <button pButton type="button" label="Commencer" (click)="takeQuiz(quiz)"></button>
+    </li>
+  </ul>
+</section>

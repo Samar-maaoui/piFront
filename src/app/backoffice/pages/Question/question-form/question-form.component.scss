@@ -1,0 +1,859 @@
+// Variables de couleurs
+// le teal principal sera utilisé comme mise en évidence (#0FB2B2),
+// la version foncée sert au texte (#2D5757)
+$cream: #F7EDE2;
+$teal: #0FB2B2;          /* couleur principale en évidence */
+$teal-dark: #2D5757;     /* couleur sombre pour le texte */
+$teal-light: lighten($teal, 10%);
+$teal-transparent: rgba(15, 178, 178, 0.1);
+$white: #FFFFFF;
+$gray-50: #FAF9F8;
+$gray-100: #F5F4F2;
+$gray-200: #E9E6E2;
+$gray-300: #DFDAD4;
+$gray-400: #B8B2AA;
+$gray-500: #9E948A;
+$gray-600: #7C6E62;
+$success: #2A7A5E;
+$warning: #C47A2D;
+$error: #B54A3A;
+$error-light: rgba(181, 74, 58, 0.1);
+// Dans question-form.component.scss, ajoutez ce mixin
+@mixin flex-end {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+// Mixins
+@mixin flex-center {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+@mixin flex-between {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+@mixin card-shadow {
+  box-shadow: 0 10px 25px -5px rgba(45, 87, 87, 0.1), 
+              0 5px 10px -5px rgba(45, 87, 87, 0.05);
+}
+
+@mixin hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 30px -5px rgba(45, 87, 87, 0.15);
+  }
+}
+
+// Modal Overlay
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(45, 87, 87, 0.3);
+  backdrop-filter: blur(4px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease;
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+}
+
+// Modal Container
+.modal-container {
+  width: 90%;
+  max-width: 800px;
+  max-height: 90vh;
+  background: $cream;
+  border-radius: 24px;
+  @include card-shadow;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease;
+  border: 1px solid rgba($teal, 0.1);
+
+  @keyframes slideUp {
+    from {
+      opacity: 0;
+      transform: translateY(20px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  // Scroll personnalisé
+  &::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  &::-webkit-scrollbar-track {
+    background: $gray-200;
+    border-radius: 4px;
+  }
+
+  &::-webkit-scrollbar-thumb {
+    background: $teal;
+    border-radius: 4px;
+    
+    &:hover {
+      background: $teal-light;
+    }
+  }
+}
+
+// Modal Header
+.modal-header {
+  @include flex-between;
+  padding: 20px 24px;
+  border-bottom: 2px solid rgba($teal, 0.1);
+  background: rgba($teal, 0.02);
+
+  .header-content {
+    @include flex-center;
+    gap: 12px;
+
+    h2 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      color: $teal-dark;
+      margin: 0;
+    }
+
+    .badge {
+      background: $teal;
+      color: $cream;
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 500;
+    }
+  }
+
+  .close {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: rgba($teal, 0.1);
+    color: $teal;
+    transition: all 0.2s ease;
+
+    &:hover {
+      background: $teal;
+      color: $cream;
+      transform: rotate(90deg);
+    }
+  }
+}
+
+// Modal Form
+.modal-form {
+  padding: 24px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+/* message d'erreur global */
+.error-message {
+  color: #e74c3c;
+  background: #fdecea;
+  border: 1px solid #e74c3c;
+  border-radius: 6px;
+  padding: 10px 14px;
+  margin-bottom: 12px;
+  font-size: 0.9rem;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+// Form Sections
+.form-section {
+  background: $white;
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 24px;
+  border: 1px solid rgba($teal, 0.1);
+  box-shadow: 0 2px 8px rgba($teal, 0.05);
+
+  .section-title {
+    @include flex-between;
+    margin-bottom: 20px;
+    
+    i {
+      font-size: 1.3rem;
+      color: $teal;
+    }
+    
+    h3 {
+      font-size: 1.2rem;
+      font-weight: 600;
+      color: $teal-dark;
+      margin: 0;
+      flex: 1;
+      margin-left: 10px;
+    }
+
+    .add-btn {
+      background: $teal;
+      color: $cream;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 30px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      @include flex-center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover:not(:disabled) {
+        background: $teal-light;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba($teal, 0.3);
+      }
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+      }
+
+      i {
+        color: $cream;
+        font-size: 0.9rem;
+      }
+    }
+  }
+}
+
+// Form Groups
+.form-group {
+  margin-bottom: 20px;
+
+  label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 500;
+    color: $teal-dark;
+    
+    .required {
+      color: $error;
+      margin-left: 4px;
+    }
+  }
+}
+
+// Rich Textarea
+.rich-textarea {
+  position: relative;
+  
+  textarea {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid $gray-300;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 1rem;
+    resize: vertical;
+    transition: all 0.2s ease;
+    background: $white;
+
+    &:focus {
+      outline: none;
+      border-color: $teal;
+      box-shadow: 0 0 0 4px rgba($teal, 0.1);
+    }
+
+    &.invalid {
+      border-color: $error;
+      
+      &:focus {
+        box-shadow: 0 0 0 4px $error-light;
+      }
+    }
+  }
+
+  .char-counter {
+    position: absolute;
+    bottom: 8px;
+    right: 12px;
+    font-size: 0.75rem;
+    color: $gray-500;
+    background: rgba($white, 0.9);
+    padding: 2px 8px;
+    border-radius: 12px;
+  }
+}
+
+// Question Settings
+.question-settings {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
+
+  .setting-item {
+    label {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+      color: $teal-dark;
+      
+      i {
+        color: $teal;
+      }
+    }
+  }
+
+  .points-selector {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+
+    button {
+      width: 36px;
+      height: 36px;
+      border: 2px solid $teal;
+      background: $white;
+      color: $teal;
+      border-radius: 10px;
+      font-size: 1.2rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover:not(:disabled) {
+        background: $teal;
+        color: $cream;
+      }
+
+      &:disabled {
+        opacity: 0.3;
+        cursor: not-allowed;
+      }
+    }
+
+    input {
+      width: 70px;
+      height: 40px;
+      text-align: center;
+      border: 2px solid $gray-300;
+      border-radius: 10px;
+      font-weight: 600;
+      color: $teal-dark;
+      
+      &:focus {
+        outline: none;
+        border-color: $teal;
+      }
+    }
+  }
+
+  select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 2px solid $gray-300;
+    border-radius: 10px;
+    font-size: 1rem;
+    color: $teal-dark;
+    background: $white;
+    cursor: pointer;
+    transition: all 0.2s ease;
+
+    &:focus {
+      outline: none;
+      border-color: $teal;
+    }
+  }
+}
+
+// Answers Section
+.answers-section {
+  background: rgba($teal, 0.02);
+}
+
+.answers-container {
+  min-height: 200px;
+}
+
+// Answer Card
+.answer-card {
+  background: $white;
+  border: 2px solid $gray-300;
+  border-radius: 14px;
+  margin-bottom: 16px;
+  position: relative;
+  transition: all 0.2s ease;
+
+  &:hover {
+    border-color: $teal;
+    transform: translateX(4px);
+    
+    .drag-handle {
+      opacity: 1;
+    }
+  }
+
+  &.correct {
+    border-color: $teal;
+    background: rgba($teal, 0.02);
+    
+    .answer-number {
+      background: $teal;
+      color: $cream;
+    }
+  }
+
+  &.warning {
+    border-color: $warning;
+    background: rgba($warning, 0.02);
+  }
+
+  // Drag Handle
+  .drag-handle {
+    position: absolute;
+    left: -12px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 24px;
+    height: 40px;
+    background: $teal;
+    border-radius: 20px;
+    @include flex-center;
+    color: $cream;
+    cursor: grab;
+    opacity: 0;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 8px rgba($teal, 0.3);
+
+    &:active {
+      cursor: grabbing;
+    }
+
+    i {
+      font-size: 0.8rem;
+    }
+  }
+
+  // Answer Content
+  .answer-content {
+    padding: 16px 16px 16px 24px;
+  }
+
+  .answer-header {
+    @include flex-between;
+    margin-bottom: 12px;
+  }
+
+  .answer-number {
+    background: $gray-300;
+    color: $teal-dark;
+    width: 28px;
+    height: 28px;
+    border-radius: 14px;
+    @include flex-center;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  .answer-type {
+    .type-btn {
+      background: transparent;
+      border: 2px solid $gray-300;
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-size: 0.9rem;
+      @include flex-center;
+      gap: 8px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      color: $gray-600;
+
+      i {
+        font-size: 0.8rem;
+      }
+
+      &:hover {
+        border-color: $teal;
+      }
+
+      &.active {
+        background: $teal;
+        border-color: $teal;
+        color: $cream;
+        
+        i {
+          color: $cream;
+        }
+      }
+    }
+  }
+
+  .answer-input {
+    margin-bottom: 12px;
+
+    input {
+      width: 100%;
+      padding: 12px 16px;
+      border: 2px solid $gray-300;
+      border-radius: 10px;
+      font-size: 1rem;
+      transition: all 0.2s ease;
+
+      &:focus {
+        outline: none;
+        border-color: $teal;
+      }
+
+      &.ng-invalid.ng-touched {
+        border-color: $error;
+      }
+    }
+
+    .input-feedback {
+      margin-top: 6px;
+      
+      .error {
+        color: $error;
+        font-size: 0.8rem;
+        @include flex-center;
+        gap: 4px;
+      }
+    }
+  }
+
+  .answer-actions {
+    @include flex-end;
+    gap: 8px;
+
+    .icon-btn {
+      width: 36px;
+      height: 36px;
+      border-radius: 10px;
+      border: none;
+      @include flex-center;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &.duplicate {
+        background: rgba($teal, 0.1);
+        color: $teal;
+
+        &:hover {
+          background: $teal;
+          color: $cream;
+        }
+      }
+
+      &.delete {
+        background: $error-light;
+        color: $error;
+
+        &:hover:not(:disabled) {
+          background: $error;
+          color: $white;
+        }
+
+        &:disabled {
+          opacity: 0.3;
+          cursor: not-allowed;
+        }
+      }
+    }
+  }
+
+  // Answer Connector
+  .answer-connector {
+    position: absolute;
+    bottom: -16px;
+    left: 30px;
+    width: 2px;
+    height: 16px;
+    background: linear-gradient(to bottom, $teal, transparent);
+    
+    &::before {
+      content: '';
+      position: absolute;
+      left: -3px;
+      bottom: -2px;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: $teal;
+    }
+  }
+}
+
+// Empty State
+.empty-state {
+  text-align: center;
+  padding: 48px 24px;
+  background: $white;
+  border: 2px dashed $gray-400;
+  border-radius: 16px;
+
+  .empty-icon {
+    width: 80px;
+    height: 80px;
+    background: rgba($teal, 0.1);
+    border-radius: 50%;
+    @include flex-center;
+    margin: 0 auto 16px;
+    
+    i {
+      font-size: 2.5rem;
+      color: $teal;
+    }
+  }
+
+  h4 {
+    color: $teal-dark;
+    margin-bottom: 8px;
+  }
+
+  p {
+    color: $gray-600;
+    margin-bottom: 20px;
+  }
+
+  .primary-btn {
+    background: $teal;
+    color: $cream;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 30px;
+    font-size: 1rem;
+    font-weight: 500;
+    @include flex-center;
+    gap: 8px;
+    margin: 0 auto;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    @include hover-lift;
+
+    i {
+      color: $cream;
+    }
+  }
+}
+
+// Question Type Indicator
+.question-type-indicator {
+  @include flex-between;
+  margin-top: 16px;
+  padding: 12px 16px;
+  background: $white;
+  border-radius: 30px;
+  border: 1px solid rgba($teal, 0.1);
+
+  .type-badge {
+    @include flex-center;
+    gap: 8px;
+    padding: 6px 16px;
+    border-radius: 30px;
+    background: rgba($teal, 0.1);
+    color: $teal;
+
+    &.multiple {
+      background: rgba($teal, 0.2);
+    }
+  }
+
+  .validation-rule {
+    @include flex-center;
+    gap: 6px;
+    color: $gray-600;
+    
+    i {
+      color: $teal;
+    }
+  }
+}
+
+// Answers Progress
+.answers-progress {
+  margin-top: 20px;
+
+  .progress-stats {
+    @include flex-between;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: $teal-dark;
+  }
+
+  .progress-bar {
+    height: 6px;
+    background: $gray-300;
+    border-radius: 3px;
+    overflow: hidden;
+
+    .progress-fill {
+      height: 100%;
+      background: linear-gradient(90deg, $teal-light, $teal);
+      border-radius: 3px;
+      transition: width 0.3s ease;
+    }
+  }
+}
+
+// Modal Footer
+.modal-footer {
+  @include flex-between;
+  padding: 20px 24px;
+  border-top: 2px solid rgba($teal, 0.1);
+  background: rgba($teal, 0.02);
+
+  .footer-actions {
+    @include flex-center;
+    gap: 12px;
+
+    .secondary-btn {
+      background: transparent;
+      border: 2px solid $teal;
+      color: $teal;
+      padding: 10px 24px;
+      border-radius: 30px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: rgba($teal, 0.1);
+        transform: translateY(-2px);
+      }
+    }
+
+    .primary-btn {
+      background: $teal;
+      color: $cream;
+      border: none;
+      padding: 12px 32px;
+      border-radius: 30px;
+      font-weight: 600;
+      @include flex-center;
+      gap: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      @include hover-lift;
+
+      &:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+      }
+
+      &.loading {
+        background: $teal-light;
+      }
+    }
+  }
+
+  .keyboard-shortcuts {
+    @include flex-center;
+    gap: 16px;
+    
+    span {
+      font-size: 0.8rem;
+      color: $gray-600;
+      
+      kbd {
+        background: $teal;
+        color: $cream;
+        padding: 4px 8px;
+        border-radius: 6px;
+        font-size: 0.7rem;
+        margin: 0 2px;
+      }
+    }
+  }
+}
+
+// Drag and Drop
+.cdk-drag-preview {
+  @include card-shadow;
+  border: 2px solid $teal;
+  border-radius: 14px;
+  background: $white;
+  opacity: 0.9;
+}
+
+.cdk-drag-placeholder {
+  opacity: 0.3;
+}
+
+.cdk-drag-animating {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+.answers-container.cdk-drop-list-dragging .answer-card:not(.cdk-drag-placeholder) {
+  transition: transform 250ms cubic-bezier(0, 0, 0.2, 1);
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .modal-container {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .question-settings {
+    grid-template-columns: 1fr;
+  }
+
+  .modal-footer {
+    flex-direction: column;
+    gap: 16px;
+
+    .keyboard-shortcuts {
+      display: none;
+    }
+  }
+
+  .answer-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .drag-handle {
+    display: none;
+  }
+}
+
+// Animations supplémentaires
+@keyframes pulse {
+  0% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+  100% { transform: scale(1); }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+// États de chargement
+.loading-skeleton {
+  background: linear-gradient(90deg, $gray-200 25%, $gray-300 50%, $gray-200 75%);
+  background-size: 200% 100%;
+  animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+  0% { background-position: 200% 0; }
+  100% { background-position: -200% 0; }
+}

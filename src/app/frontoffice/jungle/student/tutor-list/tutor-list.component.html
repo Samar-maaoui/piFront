@@ -1,0 +1,184 @@
+<div class="tutor-list-container">
+
+  <!-- HEADER -->
+  <div class="header">
+    <div class="header-text">
+      <h1>Choose your tutor</h1>
+      <p>Book a session with one of our expert English tutors</p>
+    </div>
+    <button class="btn-ai" (click)="toggleAiPanel()">
+      <span class="ai-icon">✨</span>
+      {{ showAiPanel ? 'Close' : 'AI Recommendation' }}
+    </button>
+  </div>
+
+  <!-- AI RECOMMENDATION PANEL -->
+  <div class="ai-panel" *ngIf="showAiPanel">
+    <div class="ai-panel-header">
+      <span class="ai-badge">✨ Powered by Gemini AI</span>
+      <h2>Find your ideal tutor</h2>
+      <p>Answer a few questions and our AI will select the best tutors for you.</p>
+    </div>
+
+    <div class="ai-form">
+      <div class="ai-form-row">
+        <div class="ai-field">
+          <label>What do you want to learn? *</label>
+          <input type="text" [(ngModel)]="preferences.topic"
+                 placeholder="e.g. business English, advanced grammar..."
+                 class="ai-input">
+        </div>
+        <div class="ai-field">
+          <label>Your current level</label>
+          <select [(ngModel)]="preferences.level" class="ai-input">
+            <option value="beginner">Beginner</option>
+            <option value="intermediate">Intermediate</option>
+            <option value="advanced">Advanced</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="ai-form-row">
+        <div class="ai-field">
+          <label>Maximum budget (DT/h)</label>
+          <input type="number" [(ngModel)]="preferences.maxBudget" min="10" max="200" class="ai-input">
+          <span class="ai-hint">{{ preferences.maxBudget }} DT/h maximum</span>
+        </div>
+        <div class="ai-field">
+          <label>Sessions per week</label>
+          <select [(ngModel)]="preferences.sessionsPerWeek" class="ai-input">
+            <option [value]="1">1 session</option>
+            <option [value]="2">2 sessions</option>
+            <option [value]="3">3 sessions</option>
+            <option [value]="5">5 sessions</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="ai-field">
+        <label>Your weak points (optional, comma-separated)</label>
+        <input type="text" [(ngModel)]="weakTopicsInput"
+               placeholder="e.g. grammar, vocabulary, pronunciation..."
+               class="ai-input">
+        <span class="ai-hint">Based on your quiz results</span>
+      </div>
+
+      <div class="ai-error" *ngIf="aiError">{{ aiError }}</div>
+
+      <button class="btn-get-recs" (click)="getRecommendations()" [disabled]="aiLoading">
+        <ng-container *ngIf="!aiLoading">✨ Get my recommendations</ng-container>
+        <ng-container *ngIf="aiLoading">
+          <span class="pulse-dot"></span> Analysing...
+        </ng-container>
+      </button>
+    </div>
+
+    <!-- AI Results -->
+    <div class="ai-results" *ngIf="recommendations.length > 0">
+      <h3>Recommended tutors for you</h3>
+      <div class="rec-cards">
+        <div class="rec-card" *ngFor="let rec of recommendations; let i = index">
+          <div class="rec-rank">
+            {{ i === 0 ? '🥇' : i === 1 ? '🥈' : '🥉' }}
+          </div>
+          <div class="rec-body">
+            <div class="rec-header">
+              <div class="rec-avatar">
+                {{ rec.tutor?.firstName?.[0] }}{{ rec.tutor?.lastName?.[0] }}
+              </div>
+              <div class="rec-identity">
+                <h4>{{ rec.tutor?.firstName }} {{ rec.tutor?.lastName }}</h4>
+                <div class="rec-score">
+                  <span class="score-stars">{{ getScoreStars(rec.score) }}</span>
+                  <span class="score-num">{{ rec.score }}/10</span>
+                </div>
+              </div>
+              <div class="rec-rate">{{ rec.tutor?.hourlyRate }} DT/h</div>
+            </div>
+            <p class="rec-reason">{{ rec.reason }}</p>
+            <div class="rec-tags">
+              <span *ngFor="let spec of rec.matchedSpecializations" class="rec-tag">{{ spec }}</span>
+            </div>
+            <button class="btn-book-rec" (click)="bookTutor(rec.tutor!)">
+              Book this tutor
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FILTERS -->
+  <div class="filters">
+    <div class="search-box">
+      <input type="text" placeholder="Search by specialisation..."
+             [(ngModel)]="searchTerm" (input)="filterTutors()">
+    </div>
+    <div class="sort-options">
+      <select [(ngModel)]="sortBy" (change)="filterTutors()">
+        <option value="rating">Top rated</option>
+        <option value="price-low">Price: low to high</option>
+        <option value="price-high">Price: high to low</option>
+        <option value="experience">Most experienced</option>
+      </select>
+    </div>
+  </div>
+
+  <!-- TUTOR GRID -->
+  <div *ngIf="loading" class="loading"><p>Loading tutors...</p></div>
+
+  <div *ngIf="!loading" class="tutor-grid">
+    <div *ngIf="filteredTutors.length === 0" class="no-tutors">
+      <p>No tutors found.</p>
+    </div>
+
+    <div *ngFor="let tutor of filteredTutors"
+         class="tutor-card"
+         [class.ai-recommended]="!!isRecommended(tutor.id)"
+         (click)="selectTutor(tutor)">
+
+      <div class="ai-rec-badge" *ngIf="isRecommended(tutor.id)">
+        ✨ AI Recommended — {{ isRecommended(tutor.id)?.score }}/10
+      </div>
+
+      <div class="tutor-image" [class.ai-gradient]="!!isRecommended(tutor.id)">
+        <div class="avatar">{{ tutor.firstName[0] }}{{ tutor.lastName[0] }}</div>
+      </div>
+
+      <div class="tutor-info">
+        <div class="tutor-header">
+          <h3>{{ tutor.firstName }} {{ tutor.lastName }}</h3>
+          <div class="rating">
+            <span>⭐</span>
+            <span class="rating-value">{{ tutor.rating }}</span>
+            <span class="review-count">({{ tutor.reviewCount }})</span>
+          </div>
+        </div>
+
+        <p class="bio">{{ tutor.bio }}</p>
+
+        <div class="specializations">
+          <span *ngFor="let spec of tutor.specialization.slice(0, 3)" class="spec-tag">{{ spec }}</span>
+        </div>
+
+        <p class="ai-snippet" *ngIf="isRecommended(tutor.id)">
+          <span class="ai-label">AI:</span> {{ isRecommended(tutor.id)?.reason }}
+        </p>
+
+        <div class="tutor-stats">
+          <div class="stat"><span>🎓</span><span>{{ tutor.experienceYears }} yrs</span></div>
+          <div class="stat"><span>💰</span><span>{{ tutor.hourlyRate }} DT/h</span></div>
+          <div class="stat"><span>🌐</span><span>{{ tutor.languages.join(', ') }}</span></div>
+        </div>
+
+        <div class="availability">
+          <span class="available-badge">Available</span>
+          <button class="btn-book" (click)="bookTutor(tutor); $event.stopPropagation()">
+            Book
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</div>

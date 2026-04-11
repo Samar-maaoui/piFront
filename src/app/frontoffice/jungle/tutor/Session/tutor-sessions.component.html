@@ -1,0 +1,141 @@
+<!-- tutor-sessions.component.html -->
+<div class="page-wrapper">
+
+  <!-- Header Section -->
+  <header class="page-header">
+    <div class="header-content">
+      <div>
+        <h1 class="page-title"> My Sessions</h1>
+        <p class="page-subtitle">Manage and monitor your live teaching sessions</p>
+      </div>
+      <div class="header-stats">
+        <div class="stat-card">
+          <span class="stat-value">{{ countByStatus('ONGOING') }}</span>
+          <span class="stat-label">Ongoing</span>
+        </div>
+        <div class="stat-card">
+          <span class="stat-value">{{ countByStatus('SCHEDULED') }}</span>
+          <span class="stat-label">Scheduled</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- Filter Section -->
+  <section class="filter-section">
+    <div class="tab-bar" role="tablist">
+      <button class="tab-btn" *ngFor="let tab of tabs" role="tab"
+              [class.active]="activeTab === tab.value"
+              [attr.aria-selected]="activeTab === tab.value"
+              (click)="activeTab = tab.value; filterSessions()">
+        <span class="tab-label">{{ tab.label }}</span>
+        <span class="tab-count">{{ countByStatus(tab.value) }}</span>
+      </button>
+    </div>
+  </section>
+
+  <!-- Sessions List -->
+  <section class="sessions-container" *ngIf="filteredSessions.length > 0; else empty">
+    <div class="sessions-list">
+      <div class="session-row" *ngFor="let s of filteredSessions"
+         [class.ongoing]="s.status === 'ONGOING'"
+         [class.scheduled]="s.status === 'SCHEDULED'">
+
+      <!-- Session Info Section -->
+      <div class="session-info">
+        <div class="session-header">
+          <h3 class="session-id"> Session #{{ s.id }}</h3>
+          <span class="status-badge" [ngClass]="s.status.toLowerCase()">
+            {{ getSessionStatusLabel(getSessionDisplayStatus(s)) }}
+          </span>
+        </div>
+        <div class="session-meta">
+          <div class="meta-item">
+            <span class="meta-icon"></span>
+            <span>{{ s.booking?.sessionDate | date:'EEE d MMM y' }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-icon"></span>
+            <span>{{ s.booking?.startTime | slice:0:5 }} – {{ s.booking?.endTime | slice:0:5 }}</span>
+          </div>
+          <div class="meta-item">
+            <span class="meta-icon"></span>
+            <span>Student #{{ s.booking?.studentId }}</span>
+          </div>
+        </div>
+        <div class="session-timing" *ngIf="s.startedAt">
+          <strong>Duration:</strong> Started {{ s.startedAt | date:'HH:mm' }}
+          <span *ngIf="s.endedAt"> • Ended {{ s.endedAt | date:'HH:mm' }}</span>
+          <span *ngIf="s.duration" class="duration-badge">{{ s.duration }} min</span>
+        </div>
+      </div>
+
+      <!-- Status & Meeting Link -->
+      <div class="session-middle">
+        <a *ngIf="s.meetingLink && s.status !== 'DONE' && s.status !== 'MISSED'"
+           [href]="s.meetingLink" target="_blank" class="jitsi-link">
+          <span class="link-icon"></span>
+          Open Jitsi
+        </a>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="session-actions">
+
+        <!-- SCHEDULED → Start Button -->
+        <button class="btn-action btn-start" *ngIf="s.status === 'SCHEDULED'"
+                (click)="startSession(s.id)" title="Start this session">
+          <span class="btn-icon"></span>
+          <span class="btn-text">Start Session</span>
+        </button>
+
+        <!-- ONGOING → End or Missed Actions -->
+        <div class="action-group" *ngIf="s.status === 'ONGOING'">
+          <button class="btn-action btn-end" (click)="endSession(s.id)" title="End the session">
+            <span class="btn-icon"></span>
+            <span class="btn-text">End</span>
+          </button>
+          <button class="btn-action btn-missed" (click)="markMissed(s.id)" title="Mark student as absent">
+            <span class="btn-icon"></span>
+            <span class="btn-text">Absent</span>
+          </button>
+        </div>
+
+        <!-- DONE → Feedback Section -->
+        <div class="feedback-section" *ngIf="s.feedback">
+          <div class="feedback-preview">
+            <div class="feedback-header">
+              <span class="stars">
+                <span *ngFor="let i of [1,2,3,4,5]" class="star"
+                      [class.filled]="i <= s.feedback.rating"></span>
+              </span>
+            </div>
+            <p class="feedback-comment">{{ s.feedback.comment || 'No comment provided' }}</p>
+            <button class="btn-action btn-feedback" (click)="viewFeedback(s)">
+              <span class="btn-icon"></span>
+              <span class="btn-text">View Details</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Awaiting Feedback -->
+        <div class="awaiting-feedback" *ngIf="s.status === 'DONE' && !s.feedback">
+          <div class="awaiting-indicator"></div>
+          <span class="awaiting-text"> Awaiting student feedback</span>
+        </div>
+      </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Empty State -->
+  <ng-template #empty>
+    <section class="empty-container">
+      <div class="empty-state">
+        <div class="empty-icon"></div>
+        <h3 class="empty-title">No Sessions Found</h3>
+        <p class="empty-message">Sessions will appear here once you have confirmed bookings</p>
+      </div>
+    </section>
+  </ng-template>
+</div>

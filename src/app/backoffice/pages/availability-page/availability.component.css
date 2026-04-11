@@ -1,0 +1,2 @@
+.availability-grid { display:flex; gap:8px; flex-wrap:wrap }
+.slot { border:1px solid #eaeaea; padding:6px 8px; border-radius:4px }

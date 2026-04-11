@@ -1,0 +1,105 @@
+.btn-jie {
+  background-color: #2D5757;
+  color: white;
+  border: 2px solid #2D5757;
+  transition: all 0.2s ease;
+}
+.btn-jie:hover { background-color: #1e3d3d; border-color: #1e3d3d; color: white; }
+
+.btn-outline-jie {
+  background-color: transparent;
+  color: #2D5757;
+  border: 2px solid #2D5757;
+  transition: all 0.2s ease;
+}
+.btn-outline-jie:hover { background-color: #2D5757; color: white; }
+
+/* ── Grid ── */
+.av-grid-wrapper { border-radius: 12px; overflow: hidden; border: 1px solid #dee2e6; }
+
+.av-grid {
+  display: grid;
+  grid-template-columns: 80px repeat(7, 1fr);
+}
+
+.av-head-time {
+  background: #2D5757;
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 10px 8px;
+  border-right: 1px solid rgba(255,255,255,0.2);
+}
+
+.av-head {
+  background: #2D5757;
+  color: white;
+  font-size: 12px;
+  font-weight: 500;
+  padding: 10px 4px;
+  text-align: center;
+  border-right: 1px solid rgba(255,255,255,0.2);
+}
+.av-head:last-child { border-right: none; }
+
+.av-time {
+  background: #f8f9fa;
+  color: #6c757d;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 8px;
+  text-align: right;
+  border-right: 1px solid #dee2e6;
+  border-bottom: 1px solid #dee2e6;
+}
+.av-time.last { border-bottom: none; }
+
+.av-cell {
+  padding: 3px;
+  border-right: 1px solid #dee2e6;
+  border-bottom: 1px solid #dee2e6;
+  min-height: 36px;
+}
+.av-cell:last-child { border-right: none; }
+.av-cell.last-row { border-bottom: none; }
+
+.av-slot {
+  background: #e8f1f1;
+  color: #2D5757;
+  border-radius: 4px;
+  padding: 4px 3px;
+  font-size: 10px;
+  font-weight: 500;
+  text-align: center;
+  cursor: pointer;
+  transition: all 0.15s ease;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.av-slot:hover { background: #2D5757; color: white; }
+
+/* ── Légende ── */
+.av-legend {
+  display: flex;
+  gap: 20px;
+  padding: 10px 12px;
+  background: #f8f9fa;
+  border-top: 1px solid #dee2e6;
+}
+.av-legend-item { display: flex; align-items: center; gap: 6px; font-size: 12px; color: #6c757d; }
+.av-legend-dot { width: 14px; height: 14px; border-radius: 3px; }
+.av-legend-dot.available { background: #e8f1f1; border: 1px solid #2D5757; }
+.av-legend-dot.empty { background: white; border: 1px solid #dee2e6; }
+
+/* ── Jours modal ── */
+.day-btn {
+  border: 2px solid #2D5757;
+  color: #2D5757;
+  background-color: transparent;
+  transition: all 0.2s ease;
+  min-width: 48px;
+}
+.day-btn:hover { background-color: #f0f5f5; }
+.day-btn.selected { background-color: #2D5757; color: white; font-weight: 500; }

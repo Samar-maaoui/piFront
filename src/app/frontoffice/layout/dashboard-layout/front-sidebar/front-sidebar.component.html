@@ -1,0 +1,15 @@
+<aside class="fd-sidebar">
+  <div class="fd-sidebar-label">Menu</div>
+  <nav class="fd-sidebar-nav">
+    <a
+      *ngFor="let item of navItems"
+      [routerLink]="item.route"
+      routerLinkActive="active"
+      class="fd-sidebar-link"
+    >
+      <span class="fd-sidebar-icon" *ngIf="item.icon">{{ item.icon }}</span>
+      <span class="fd-sidebar-label-text">{{ item.label }}</span>
+    </a>
+  </nav>
+</aside>
+

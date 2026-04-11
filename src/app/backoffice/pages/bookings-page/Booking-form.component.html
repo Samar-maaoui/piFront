@@ -1,0 +1,126 @@
+<!-- booking-form.component.html -->
+<div class="container py-4" style="max-width: 700px;">
+
+  <div class="d-flex align-items-center mb-4">
+    <button class="btn btn-outline-secondary me-3" routerLink="/bookings">← Back</button>
+    <div>
+      <h2 class="fw-bold mb-0" style="color:#2D5757;">
+        {{ isEdit ? '✏️ Edit Booking' : '📅 New Booking' }}
+      </h2>
+    </div>
+  </div>
+
+  <div class="card border-0 shadow-sm">
+    <div class="card-body p-4">
+      <form (ngSubmit)="onSubmit()" #bookingForm="ngForm">
+
+        <!-- Type -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Session Type *</label>
+          <div class="row g-2">
+            <div class="col-4" *ngFor="let type of sessionTypes">
+              <div class="card border-2 text-center p-3 cursor-pointer"
+                   [class.border-jie]="booking.type === type.value"
+                   [style.background]="booking.type === type.value ? '#F7EDE2' : 'white'"
+                   (click)="booking.type = type.value">
+                <div class="fs-3">{{ type.icon }}</div>
+                <small class="fw-semibold">{{ type.label }}</small>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tutor Selection (students only) -->
+        <div class="mb-3" *ngIf="isStudent">
+          <label class="form-label fw-semibold">Select Tutor *</label>
+          <select class="form-select" [(ngModel)]="booking.tutorId"
+                  name="tutorId" required (change)="onTutorChange()"
+                  [disabled]="!isEditable">
+            <option value="">-- Choose a tutor --</option>
+            <option *ngFor="let tutor of tutors" [value]="tutor.id">
+              {{ tutor.name }} — ⭐ {{ tutor.rating }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Date & Time -->
+        <div class="row g-3 mb-3">
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Date *</label>
+            <input type="date" class="form-control"
+                   [(ngModel)]="booking.sessionDate"
+                   name="sessionDate" required
+                   [min]="today"
+                   (change)="loadAvailableSlots()">
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">Start Time *</label>
+            <select class="form-select" [(ngModel)]="booking.startTime"
+                    name="startTime" required>
+              <option value="">-- Select --</option>
+              <option *ngFor="let slot of availableSlots" [value]="slot.start">
+                {{ slot.start }}
+              </option>
+            </select>
+          </div>
+          <div class="col-md-4">
+            <label class="form-label fw-semibold">End Time *</label>
+            <select class="form-select" [(ngModel)]="booking.endTime"
+                    name="endTime" required>
+              <option value="">-- Select --</option>
+              <option *ngFor="let slot of availableSlots" [value]="slot.end">
+                {{ slot.end }}
+              </option>
+            </select>
+          </div>
+        </div>
+
+        <!-- Available Slots -->
+        <div class="mb-3" *ngIf="availableSlots.length > 0">
+          <label class="form-label fw-semibold">Available Slots</label>
+          <div class="d-flex flex-wrap gap-2">
+            <button type="button" class="btn btn-sm"
+                    *ngFor="let slot of availableSlots"
+                    [class.btn-jie]="selectedSlot === slot"
+                    [class.btn-outline-jie]="selectedSlot !== slot"
+                    (click)="selectSlot(slot)">
+              {{ slot.start }} – {{ slot.end }}
+            </button>
+          </div>
+        </div>
+
+        <!-- Notes -->
+        <div class="mb-4">
+          <label class="form-label fw-semibold">Notes (optional)</label>
+          <textarea class="form-control" rows="3"
+                    [(ngModel)]="booking.notes"
+                    name="notes"
+                    placeholder="Tell the tutor what you'd like to work on...">
+          </textarea>
+        </div>
+
+        <!-- Summary -->
+        <div class="alert border-0 mb-4" style="background-color:#F7EDE2;"
+             *ngIf="booking.tutorId && booking.sessionDate && booking.startTime">
+          <h6 class="fw-bold" style="color:#2D5757;">📋 Booking Summary</h6>
+          <div><strong>Type:</strong> {{ booking.type }}</div>
+          <div><strong>Date:</strong> {{ booking.sessionDate | date:'fullDate' }}</div>
+          <div><strong>Time:</strong> {{ booking.startTime }} – {{ booking.endTime }}</div>
+          <div><strong>Tutor:</strong> #{{ booking.tutorId }}</div>
+        </div>
+
+        <!-- Actions -->
+        <div class="d-flex gap-3">
+          <button type="submit" class="btn btn-jie flex-grow-1"
+                  [disabled]="bookingForm.invalid || isLoading || !isEditable">
+            <span *ngIf="isLoading" class="spinner-border spinner-border-sm me-2"></span>
+            {{ isEdit ? '💾 Update' : '✅ Confirm Booking' }}
+          </button>
+          <button type="button" class="btn btn-outline-secondary"
+                  routerLink="/bookings">Cancel</button>
+        </div>
+
+      </form>
+    </div>
+  </div>
+</div>

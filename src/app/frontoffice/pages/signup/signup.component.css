@@ -1,0 +1,237 @@
+.signup-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--color-dark-teal) 0%, var(--color-accent-purple) 100%);
+  padding: 20px;
+  font-family: 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.signup-card {
+  background: var(--color-cream);
+  border-radius: 12px;
+  box-shadow: 0 10px 40px rgba(45, 87, 87, 0.2);
+  padding: 40px;
+  max-width: 600px;
+  width: 100%;
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(30px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.signup-card h1 {
+  text-align: center;
+  color: var(--color-dark-teal);
+  margin-bottom: 30px;
+  font-size: 2em;
+}
+
+/* Role Selection */
+.role-selection {
+  margin-bottom: 30px;
+  padding-bottom: 30px;
+  border-bottom: 2px solid var(--color-gray-light);
+}
+
+.role-selection h2 {
+  text-align: center;
+  color: var(--color-text-dark);
+  font-size: 1.2em;
+  margin-bottom: 20px;
+}
+
+.role-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.role-btn {
+  flex: 1;
+  min-width: 140px;
+  padding: 20px;
+  border: 2px solid var(--color-gray-medium);
+  background: var(--color-white);
+  border-radius: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  font-size: 1em;
+}
+
+.role-btn:hover {
+  border-color: var(--color-accent-gold);
+  background: var(--color-gray-light);
+}
+
+.role-btn.active {
+  border-color: var(--color-dark-teal);
+  background: var(--color-dark-teal);
+  color: var(--color-cream);
+}
+
+.role-icon {
+  font-size: 2.5em;
+}
+
+/* Form Sections */
+.form-section {
+  margin-bottom: 30px;
+  padding: 20px 0;
+  border-bottom: 1px solid var(--color-gray-light);
+}
+
+.form-section:last-of-type {
+  border-bottom: none;
+}
+
+.form-section h3 {
+  color: var(--color-dark-teal);
+  margin-bottom: 20px;
+  font-size: 1.1em;
+  font-weight: 600;
+}
+
+/* Form Groups */
+.form-group {
+  margin-bottom: 20px;
+}
+
+label {
+  display: block;
+  color: var(--color-text-dark);
+  font-weight: 500;
+  margin-bottom: 8px;
+  font-size: 0.95em;
+}
+
+.required {
+  color: var(--color-accent-red);
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px 15px;
+  border: 2px solid var(--color-gray-medium);
+  border-radius: 6px;
+  font-size: 1em;
+  transition: all 0.3s ease;
+  font-family: inherit;
+  background: var(--color-white);
+  color: var(--color-text-dark);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--color-dark-teal);
+  box-shadow: 0 0 0 3px rgba(45, 87, 87, 0.1);
+}
+
+.form-control:disabled {
+  background-color: var(--color-gray-light);
+  cursor: not-allowed;
+}
+
+.form-control.is-invalid {
+  border-color: var(--color-accent-red);
+}
+
+.form-control.is-invalid:focus {
+  box-shadow: 0 0 0 3px rgba(200, 70, 48, 0.1);
+}
+
+textarea.form-control {
+  resize: vertical;
+  min-height: 100px;
+}
+
+select.form-control {
+  cursor: pointer;
+}
+
+/* Error Messages */
+.error-message {
+  color: var(--color-accent-red);
+  font-size: 0.85em;
+  margin-top: 5px;
+  padding: 5px 0;
+}
+
+.error-message span {
+  display: block;
+}
+
+/* Submit Button */
+.btn-submit {
+  width: 100%;
+  padding: 14px;
+  background: linear-gradient(135deg, var(--color-dark-teal) 0%, var(--color-accent-purple) 100%);
+  color: var(--color-cream);
+  border: none;
+  border-radius: 6px;
+  font-size: 1.1em;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: 20px;
+}
+
+.btn-submit:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px rgba(45, 87, 87, 0.3);
+}
+
+.btn-submit:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.btn-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .signup-card {
+    padding: 30px 20px;
+  }
+
+  .signup-card h1 {
+    font-size: 1.5em;
+  }
+
+  .role-buttons {
+    flex-direction: column;
+  }
+
+  .role-btn {
+    min-width: auto;
+  }
+
+  .form-section h3 {
+    font-size: 1em;
+  }
+
+  label {
+    font-size: 0.9em;
+  }
+
+  .form-control {
+    padding: 10px 12px;
+    font-size: 16px; /* Prevents zoom on iOS */
+  }
+}

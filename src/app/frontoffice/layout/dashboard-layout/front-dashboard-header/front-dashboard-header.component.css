@@ -1,0 +1,157 @@
+/* ── Frontoffice Dashboard Header ────────────────────────────────
+   Uses only --fd-* and frontoffice --color-* tokens.
+   Completely separate from the backoffice dark .dashboard-header.
+──────────────────────────────────────────────────────────────── */
+
+.fd-header {
+  background: var(--fd-header-bg);
+  height: 64px;
+  display: flex;
+  align-items: center;
+  padding: 0 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  border-bottom: 3px solid var(--fd-header-border);
+  box-shadow: 0 2px 12px rgba(45, 87, 87, 0.25);
+}
+
+.fd-header-content {
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  width: 100%;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+/* ── Logo ── */
+.fd-logo {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+
+.fd-logo-icon { font-size: 1.6rem; }
+
+.fd-logo-text {
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: var(--fd-header-text);
+  letter-spacing: 0.3px;
+}
+
+/* ── Nav links ── */
+.fd-nav {
+  display: flex;
+  gap: 0.2rem;
+  flex: 1;
+}
+
+.fd-nav-link {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--fd-header-link);
+  text-decoration: none;
+  font-size: 0.9rem;
+  font-weight: 500;
+  padding: 0.4rem 0.85rem;
+  border-radius: 6px;
+  transition: background 0.2s, color 0.2s;
+}
+
+.fd-nav-icon { font-size: 1rem; }
+
+.fd-nav-link:hover {
+  background: var(--fd-header-link-hover-bg);
+  color: var(--fd-header-link-active);
+}
+
+.fd-nav-link.active {
+  background: rgba(246, 189, 96, 0.2);
+  color: var(--fd-header-link-active);
+  font-weight: 600;
+}
+
+/* ── User section ── */
+.fd-user {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-left: auto;
+  padding-left: 1.5rem;
+  border-left: 1px solid rgba(247, 237, 226, 0.2);
+}
+
+.fd-avatar {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  background: var(--color-accent-gold);
+  color: var(--color-dark-teal);
+  font-size: 0.78rem;
+  font-weight: 800;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  letter-spacing: 0.5px;
+}
+
+.fd-user-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.12rem;
+}
+
+.fd-user-name {
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--fd-header-text);
+  line-height: 1;
+}
+
+/* Role badges */
+.fd-role-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  padding: 0.1rem 0.45rem;
+  border-radius: 3px;
+  width: fit-content;
+}
+
+.fd-role-badge.fd-role-student {
+  background: rgba(45, 87, 87, 0.5);
+  color: #a8d5a2;
+}
+
+.fd-role-badge.fd-role-tutor {
+  background: rgba(61, 61, 96, 0.5);
+  color: #c5b8f0;
+}
+
+/* Sign Out button */
+.fd-btn-logout {
+  background: transparent;
+  border: 1px solid rgba(247, 237, 226, 0.3);
+  color: rgba(247, 237, 226, 0.75);
+  padding: 0.35rem 0.9rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+  white-space: nowrap;
+}
+
+.fd-btn-logout:hover {
+  background: var(--color-accent-red);
+  border-color: var(--color-accent-red);
+  color: #fff;
+}
+

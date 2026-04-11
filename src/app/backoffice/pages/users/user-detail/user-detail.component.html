@@ -1,0 +1,207 @@
+<div class="user-detail-page">
+
+  <!-- Back -->
+  <a routerLink="/admin/users" class="back-link">← Back to Users</a>
+
+  <!-- Loading -->
+  <p class="state-msg" *ngIf="loading">Loading user…</p>
+
+  <!-- Error -->
+  <div class="error-banner"   *ngIf="errorMessage">⚠️ {{ errorMessage }}</div>
+
+  <!-- Success -->
+  <div class="success-banner" *ngIf="saveSuccess">✅ User updated successfully.</div>
+
+  <!-- ═══════════════════════ USER CARD ═══════════════════════ -->
+  <div class="user-card" *ngIf="!loading && user">
+
+    <!-- Card header -->
+    <div class="card-header">
+      <div class="avatar" [style.background]="getRoleBg()" [style.color]="getRoleColor()">
+        {{ getInitials() }}
+      </div>
+      <div class="card-header-info">
+        <h2>{{ user.firstName }} {{ user.lastName }}</h2>
+        <div class="header-badges">
+          <span class="role-badge" [style.background]="getRoleBg()" [style.color]="getRoleColor()">
+            {{ user.role }}
+          </span>
+          <span class="status-badge status-{{ user.accountStatus | lowercase }}">
+            {{ user.accountStatus }}
+          </span>
+        </div>
+      </div>
+      <!-- Action buttons (hidden while editing) -->
+      <div class="card-actions" *ngIf="!editMode">
+        <button class="btn-edit"   (click)="openEdit()">✏️ Edit</button>
+        <button class="btn-delete" (click)="confirmDelete()">🗑 Delete</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <!-- ════════════ VIEW MODE ════════════ -->
+    <div class="details-grid" *ngIf="!editMode">
+
+      <div class="detail-item">
+        <span class="detail-label">User ID</span>
+        <span class="detail-value mono">#{{ user.id }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Email</span>
+        <span class="detail-value">{{ user.email }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">First Name</span>
+        <span class="detail-value">{{ user.firstName }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Last Name</span>
+        <span class="detail-value">{{ user.lastName }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Role</span>
+        <span class="detail-value">{{ user.role }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Account Status</span>
+        <span class="detail-value">{{ user.accountStatus }}</span>
+      </div>
+      <div class="detail-item" *ngIf="user.level">
+        <span class="detail-label">Level</span>
+        <span class="detail-value">{{ user.level }}</span>
+      </div>
+      <div class="detail-item" *ngIf="user.learningGoals">
+        <span class="detail-label">Learning Goals</span>
+        <span class="detail-value">{{ user.learningGoals }}</span>
+      </div>
+      <div class="detail-item" *ngIf="user.bio">
+        <span class="detail-label">Bio</span>
+        <span class="detail-value">{{ user.bio }}</span>
+      </div>
+      <div class="detail-item" *ngIf="user.specialization">
+        <span class="detail-label">Specialization</span>
+        <span class="detail-value">{{ user.specialization }}</span>
+      </div>
+      <div class="detail-item" *ngIf="user.experienceYears != null">
+        <span class="detail-label">Experience</span>
+        <span class="detail-value">{{ user.experienceYears }} years</span>
+      </div>
+      <div class="detail-item" *ngIf="user.hourlyRate != null">
+        <span class="detail-label">Hourly Rate</span>
+        <span class="detail-value">{{ user.hourlyRate }} DT</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Member Since</span>
+        <span class="detail-value">{{ user.createdAt | date: 'longDate' }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Last Updated</span>
+        <span class="detail-value">{{ user.updatedAt | date: 'longDate' }}</span>
+      </div>
+
+    </div>
+
+    <!-- ════════════ EDIT MODE ════════════ -->
+    <form class="edit-form" *ngIf="editMode" (ngSubmit)="saveEdit()">
+
+      <div class="form-section-title">Basic Info</div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label>First Name</label>
+          <input type="text"  [(ngModel)]="editForm.firstName" name="firstName" required />
+        </div>
+        <div class="form-group">
+          <label>Last Name</label>
+          <input type="text"  [(ngModel)]="editForm.lastName"  name="lastName"  required />
+        </div>
+        <div class="form-group">
+          <label>Email</label>
+          <input type="email" [(ngModel)]="editForm.email"     name="email"     required />
+        </div>
+        <div class="form-group">
+          <label>Role</label>
+          <select [(ngModel)]="editForm.role" name="role">
+            <option value="STUDENT">STUDENT</option>
+            <option value="TUTOR">TUTOR</option>
+            <option value="ADMIN">ADMIN</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label>Account Status</label>
+          <select [(ngModel)]="editForm.accountStatus" name="accountStatus">
+            <option value="ACTIVE">ACTIVE</option>
+            <option value="PENDING">PENDING</option>
+            <option value="BANNED">BANNED</option>
+          </select>
+        </div>
+      </div>
+
+      <ng-container *ngIf="editForm.role === 'STUDENT'">
+        <div class="form-section-title">Student Info</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Level</label>
+            <input type="text" [(ngModel)]="editForm.level" name="level" />
+          </div>
+          <div class="form-group full-width">
+            <label>Learning Goals</label>
+            <textarea [(ngModel)]="editForm.learningGoals" name="learningGoals" rows="3"></textarea>
+          </div>
+        </div>
+      </ng-container>
+
+      <ng-container *ngIf="editForm.role === 'TUTOR'">
+        <div class="form-section-title">Tutor Info</div>
+        <div class="form-grid">
+          <div class="form-group">
+            <label>Specialization</label>
+            <input type="text"   [(ngModel)]="editForm.specialization"  name="specialization" />
+          </div>
+          <div class="form-group">
+            <label>Experience (years)</label>
+            <input type="number" [(ngModel)]="editForm.experienceYears" name="experienceYears" min="0" />
+          </div>
+          <div class="form-group">
+            <label>Hourly Rate</label>
+            <input type="number" [(ngModel)]="editForm.hourlyRate"      name="hourlyRate" min="0" step="0.01" />
+          </div>
+          <div class="form-group full-width">
+            <label>Bio</label>
+            <textarea [(ngModel)]="editForm.bio" name="bio" rows="3"></textarea>
+          </div>
+        </div>
+      </ng-container>
+
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="cancelEdit()" [disabled]="saving">Cancel</button>
+        <button type="submit" class="btn-save"   [disabled]="saving">
+          {{ saving ? 'Saving…' : '💾 Save Changes' }}
+        </button>
+      </div>
+
+    </form>
+
+  </div><!-- /user-card -->
+
+  <!-- ═══════════════════════ DELETE MODAL ═══════════════════════ -->
+  <div class="modal-overlay" *ngIf="showDeleteModal" (click)="cancelDelete()">
+    <div class="modal" (click)="$event.stopPropagation()">
+      <div class="modal-icon">🗑</div>
+      <h3>Delete User</h3>
+      <p>
+        Are you sure you want to permanently delete
+        <strong>{{ user?.firstName }} {{ user?.lastName }}</strong>?
+        This action cannot be undone.
+      </p>
+      <div class="modal-actions">
+        <button class="btn-cancel"         (click)="cancelDelete()" [disabled]="deleting">Cancel</button>
+        <button class="btn-confirm-delete" (click)="doDelete()"     [disabled]="deleting">
+          {{ deleting ? 'Deleting…' : 'Yes, Delete' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>
+

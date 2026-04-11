@@ -1,0 +1,108 @@
+<div class="quiz-list-wrapper">
+  <div class="container">
+
+    <!-- Header -->
+    <div class="page-header">
+      <div class="header-top">
+        <div class="header-text">
+          <h1>Available Quizzes</h1>
+          <p>Test your knowledge and earn experience points</p>
+        </div>
+        <div class="header-actions">
+          <button class="btn btn-gradient" (click)="goToProfile()">My Profile</button>
+          <button class="btn btn-glass" (click)="goToHistory()">My Results</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Filters -->
+    <div class="filters" *ngIf="!loading">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Search quizzes..." [(ngModel)]="searchTerm" (keyup)="filterQuizzes()">
+      </div>
+      <div class="level-filter">
+        <select [(ngModel)]="levelFilter" (change)="filterQuizzes()">
+          <option value="">All Levels</option>
+          <option *ngFor="let lvl of levels" [value]="lvl">{{ getLevelIcon(lvl) }} {{ lvl }}</option>
+        </select>
+      </div>
+    </div>
+
+    <!-- Loading -->
+    <div class="loading-state" *ngIf="loading">
+      <div class="spinner"></div>
+      <p>Loading quizzes...</p>
+    </div>
+
+    <!-- Grid -->
+    <div class="quiz-grid" *ngIf="!loading">
+
+      <div *ngIf="filteredQuizzes.length === 0" class="no-quizzes">
+        <div class="no-quizzes-icon"></div>
+        <p>No quizzes found</p>
+        <span>Try a different filter or search term</span>
+      </div>
+
+      <!-- Cards -->
+      <div *ngFor="let quiz of filteredQuizzes"
+           class="quiz-card"
+           [attr.data-level]="quiz.level">
+
+        <!-- Full bleed image -->
+        <div class="card-image">
+          <img *ngIf="quiz.cardImage?.url"
+               [src]="quiz.cardImage.url"
+               [alt]="quiz.title"
+               loading="lazy"
+               (error)="quiz.cardImage = null">
+          <div *ngIf="!quiz.cardImage?.url" class="card-image-placeholder">
+            <span>{{ getLevelIcon(quiz.level) }}</span>
+          </div>
+          <div class="card-image-overlay"></div>
+        </div>
+
+        <!-- Level badge top-left -->
+        <span class="level-badge-img">{{ getLevelIcon(quiz.level) }} {{ quiz.level }}</span>
+
+    
+
+        <!-- Bottom overlay content -->
+        <div class="card-content">
+          <h3 class="card-title">{{ quiz.title }}</h3>
+          <p class="card-description">{{ quiz.description || 'Take this quiz to test your knowledge!' }}</p>
+
+          <div class="card-stats">
+            <div class="stat"> {{ quiz.passingScore || 60 }}% to pass</div>
+            <div class="stat" *ngIf="quiz.maxAttempts">
+              🔄 {{ quiz.attemptsCount || 0 }}/{{ quiz.maxAttempts }} attempts
+            </div>
+          </div>
+
+          <!-- Last score -->
+          <div class="last-score-bar" *ngIf="quiz.lastAttempt">
+            <span class="last-score-label">Last</span>
+            <div class="score-bar">
+              <div class="score-fill"
+                   [style.width.%]="quiz.lastAttempt.percentage || 0"
+                   [class.score-pass]="(quiz.lastAttempt.percentage || 0) >= (quiz.passingScore || 60)"
+                   [class.score-fail]="(quiz.lastAttempt.percentage || 0) < (quiz.passingScore || 60)">
+              </div>
+            </div>
+            <span class="score-value">{{ quiz.lastAttempt.percentage || 0 | number:'1.0-0' }}%</span>
+          </div>
+
+          <!-- Take button -->
+          <button class="btn-take"
+                  (click)="takeQuiz(quiz.id)"
+                  [disabled]="isMaxAttemptsReached(quiz)"
+                  [class.btn-disabled]="isMaxAttemptsReached(quiz)">
+            <span *ngIf="!isMaxAttemptsReached(quiz)">Take Quiz →</span>
+            <span *ngIf="isMaxAttemptsReached(quiz)">Max Attempts Reached</span>
+          </button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>

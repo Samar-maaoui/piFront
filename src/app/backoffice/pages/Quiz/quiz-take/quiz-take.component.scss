@@ -1,0 +1,82 @@
+.quiz-take {
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 1rem;
+}
+
+.loading {
+  text-align: center;
+  color: #666;
+  font-style: italic;
+  padding: 2rem;
+  font-size: 1.1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.loading i {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.error {
+  background: #fee;
+  border: 2px solid #fcc;
+  border-radius: 4px;
+  padding: 1rem;
+  color: #c33;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+  font-weight: 500;
+}
+
+.error i {
+  font-size: 1.2rem;
+}
+
+.no-questions {
+  text-align: center;
+  padding: 1rem;
+  color: #666;
+}
+
+.question-block {
+  margin-bottom: 1rem;
+  padding: 0.5rem;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.question-text {
+  font-weight: bold;
+  margin-bottom: 0.5rem;
+  font-size: 1.05rem;
+}
+
+.option-block {
+  display: flex;
+  align-items: center;
+  margin: 0.25rem 0;
+  gap: 0.5rem;
+  padding: 0.25rem;
+}
+
+.result {
+  text-align: center;
+  padding: 1rem;
+  background: #f0f0f0;
+  border-radius: 4px;
+}
+

@@ -1,0 +1,136 @@
+<div class="page-wrapper">
+
+  <!-- Page Header -->
+  <div class="page-hero">
+    <div class="hero-left">
+      <div class="hero-badge">My Bookings</div>
+      <h1 class="hero-title">Session Tracker</h1>
+      <p class="hero-subtitle">Manage your booking requests and upcoming sessions</p>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="stat-value stat-pending">{{ pendingCount }}</span>
+        <span class="stat-label">Pending</span>
+      </div>
+      <div class="hero-stat">
+        <span class="stat-value stat-upcoming">{{ upcomingCount }}</span>
+        <span class="stat-label">Upcoming</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs -->
+  <div class="tab-bar">
+    <button class="tab-btn" *ngFor="let tab of tabs"
+            [class.active]="activeTab === tab.value"
+            (click)="activeTab = tab.value; filterBookings()">
+      {{ tab.icon }} {{ tab.label }}
+      <span class="tab-count">{{ countByStatus(tab.value) }}</span>
+    </button>
+  </div>
+
+  <!-- Error Banner -->
+  <div class="error-banner" *ngIf="errorMessage">
+    <span>⚠️ {{ errorMessage }}</span>
+    <button (click)="errorMessage = ''">×</button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loader-ring"></div>
+    <p>Loading...</p>
+  </div>
+
+  <!-- Bookings List -->
+  <div class="bookings-list" *ngIf="!isLoading && filteredBookings.length > 0">
+    <div class="booking-card" *ngFor="let b of filteredBookings"
+         [ngClass]="getDisplayStatus(b).key">
+
+      <div class="card-stripe"></div>
+
+      <div class="card-body">
+        <div class="card-top">
+          <div class="booking-ref">
+            <span class="ref-label">Booking</span>
+            <span class="ref-id">#{{ b.id }}</span>
+          </div>
+          <span class="status-badge" [ngClass]="'badge-' + getDisplayStatus(b).key">
+            {{ getDisplayStatus(b).icon }} {{ getDisplayStatus(b).label }}
+          </span>
+        </div>
+
+        <div class="card-info-grid">
+          <div class="info-item">
+            <span class="info-icon"></span>
+            <div>
+              <div class="info-label">Tutor</div>
+              <div class="info-value">Tutor #{{ b.tutorId }}</div>
+            </div>
+          </div>
+          <div class="info-item">
+            <span class="info-icon"></span>
+            <div>
+              <div class="info-label">Date</div>
+              <div class="info-value">{{ b.sessionDate | date:'EEE d MMM y' }}</div>
+            </div>
+          </div>
+          <div class="info-item">
+            <span class="info-icon"></span>
+            <div>
+              <div class="info-label">Time</div>
+              <div class="info-value">{{ b.startTime | slice:0:5 }} – {{ b.endTime | slice:0:5 }}</div>
+            </div>
+          </div>
+          <div class="info-item">
+            <span class="info-icon"></span>
+            <div>
+              <div class="info-label">Type</div>
+              <div class="info-value">{{ getTypeLabel(b.type) }}</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="booking-notes" *ngIf="b.notes">
+          <span class="notes-icon"></span>
+          <span class="notes-text">{{ b.notes }}</span>
+        </div>
+
+        <!-- Rejection reason -->
+        <div class="rejection-reason" *ngIf="b.status === 'REJECTED' && (b.rejectionReason || b.cancellationReason)">
+          <span class="reason-icon"></span>
+          <div>
+            <div class="reason-label">Reason for rejection</div>
+            <div class="reason-text">{{ b.rejectionReason || b.cancellationReason }}</div>
+          </div>
+        </div>
+
+        <!-- Join link if upcoming & confirmed -->
+        <div class="jitsi-bar" *ngIf="getDisplayStatus(b).key === 'upcoming' && b.session?.meetingLink">
+          <div class="jitsi-icon"></div>
+          <div class="jitsi-text">
+            <div class="jitsi-title">Session ready!</div>
+            <div class="jitsi-sub">Join your Jitsi room</div>
+          </div>
+          <a [href]="b.session?.meetingLink || '#'" target="_blank" class="btn-join">Join →</a>
+        </div>
+
+        <!-- Cancel action -->
+        <div class="card-actions" *ngIf="canCancel(b)">
+          <button class="btn-cancel-booking" (click)="cancelBooking(b.id!)"
+                  [disabled]="isCancelling">
+            ✕ Cancel booking
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && filteredBookings.length === 0">
+    <div class="empty-icon"></div>
+    <h3>No bookings found</h3>
+    <p>Your bookings will appear here</p>
+    <a routerLink="/student/tutors" class="btn-primary-action">Browse tutors</a>
+  </div>
+
+</div>

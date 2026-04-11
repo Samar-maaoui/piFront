@@ -1,0 +1,61 @@
+<div class="td-page">
+
+  <!-- Pending bookings notification -->
+  <div class="notif-banner" *ngIf="showNotif">
+    <span class="notif-text">
+      You have <strong>{{ pendingCount }} pending booking{{ pendingCount > 1 ? 's' : '' }}</strong> waiting for your approval.
+    </span>
+    <a routerLink="/tutor/bookings" class="notif-btn">View bookings</a>
+    <button class="notif-close" (click)="dismissNotif()">✕</button>
+  </div>
+
+  <!-- Welcome banner -->
+  <div class="fd-welcome-banner fd-welcome-banner--tutor">
+    <div class="fd-welcome-left">
+      <h2>Welcome back, {{ user?.firstName }}</h2>
+      <p>Manage your students, sessions, and track your earnings.</p>
+    </div>
+    <span class="fd-role-pill fd-role-pill--tutor">Tutor</span>
+  </div>
+
+  <!-- Stats -->
+  <div class="fd-stats-grid">
+    <div class="fd-stat-card">
+      <div class="fd-stat-info">
+        <span class="fd-stat-label">My Students</span>
+        <span class="fd-stat-value">—</span>
+      </div>
+    </div>
+    <div class="fd-stat-card">
+      <div class="fd-stat-info">
+        <span class="fd-stat-label">Active Courses</span>
+        <span class="fd-stat-value">—</span>
+      </div>
+    </div>
+    <div class="fd-stat-card">
+      <div class="fd-stat-info">
+        <span class="fd-stat-label">Sessions This Week</span>
+        <span class="fd-stat-value">—</span>
+      </div>
+    </div>
+    <div class="fd-stat-card">
+      <div class="fd-stat-info">
+        <span class="fd-stat-label">Earnings</span>
+        <span class="fd-stat-value">—</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Quick links -->
+  <div class="fd-quick-section">
+    <h3>Quick Access</h3>
+    <div class="fd-quick-links">
+      <a routerLink="/tutor/quiz" class="fd-quick-link">📝 Manage Quizzes</a>
+      <a href="#" class="fd-quick-link">🎓 My Students</a>
+      <a href="#" class="fd-quick-link">📖 My Courses</a>
+      <a href="#" class="fd-quick-link">🗓️ Schedule</a>
+      <a href="#" class="fd-quick-link">💰 Earnings</a>
+    </div>
+  </div>
+
+</div>

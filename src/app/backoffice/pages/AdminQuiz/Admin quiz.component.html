@@ -1,0 +1,174 @@
+<!-- admin-quiz.component.html -->
+<div class="page-wrapper">
+
+  <!-- Header -->
+  <div class="page-header">
+    <div>
+      <h1 class="page-title">🎮 Quiz Management</h1>
+      <p class="page-subtitle">Overview of all quizzes across the platform</p>
+    </div>
+    <div class="header-actions">
+      <div class="search-box">
+        <span class="search-icon">🔍</span>
+        <input type="text" placeholder="Search quiz..."
+               [(ngModel)]="searchTerm"
+               (ngModelChange)="filterQuizzes()">
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Row -->
+  <div class="stats-row">
+    <div class="stat-card">
+      <div class="stat-icon">📝</div>
+      <div class="stat-info">
+        <div class="stat-value">{{ totalQuizzes }}</div>
+        <div class="stat-label">Total Quizzes</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">✅</div>
+      <div class="stat-info">
+        <div class="stat-value">{{ publishedCount }}</div>
+        <div class="stat-label">Published</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">📋</div>
+      <div class="stat-info">
+        <div class="stat-value">{{ draftCount }}</div>
+        <div class="stat-label">Drafts</div>
+      </div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-icon">🎯</div>
+      <div class="stat-info">
+        <div class="stat-value">{{ totalAttempts }}</div>
+        <div class="stat-label">Total Attempts</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="filter-bar">
+    <button class="filter-btn" *ngFor="let f of filters"
+            [class.active]="activeFilter === f.value"
+            (click)="activeFilter = f.value; filterQuizzes()">
+      {{ f.icon }} {{ f.label }}
+    </button>
+    <div class="filter-spacer"></div>
+    <select class="level-select" [(ngModel)]="levelFilter" (ngModelChange)="filterQuizzes()">
+      <option value="">All Levels</option>
+      <option value="A1">A1</option>
+      <option value="A2">A2</option>
+      <option value="B1">B1</option>
+      <option value="B2">B2</option>
+      <option value="C1">C1</option>
+      <option value="C2">C2</option>
+    </select>
+  </div>
+
+  <!-- Quiz Table -->
+  <div class="table-wrapper" *ngIf="filteredQuizzes.length > 0; else empty">
+    <table class="quiz-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Quiz</th>
+          <th>Level</th>
+          <th>Duration</th>
+          <th>Pass Score</th>
+          <th>Status</th>
+          <th>Attempts</th>
+          <th>Avg Score</th>
+          <th>Created</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let q of filteredQuizzes; let i = index"
+            class="table-row"
+            [style.animation-delay]="i * 0.05 + 's'">
+          <td class="row-id">#{{ q.id }}</td>
+          <td class="row-title">
+            <div class="quiz-title">{{ q.title }}</div>
+            <div class="quiz-meta">{{ q.questions?.length || 0 }} questions</div>
+         
+          </td>
+          <td>
+            <span class="level-badge" [ngClass]="q.level?.toLowerCase()">
+              {{ getLevelIcon(q.level) }} {{ q.level }}
+            </span>
+          </td>
+          <td>⏱️ {{ q.duration }} min</td>
+          <td>🎯 {{ q.passingScore }}%</td>
+          <td>
+            <span class="status-badge" [ngClass]="q.status?.toLowerCase()">
+              {{ getStatusIcon(q.status) }} {{ q.status }}
+            </span>
+          </td>
+          <td class="attempts-cell">
+            <span class="attempts-count">{{ q.attemptsCount || 0 }}</span>
+          </td>
+          <td>
+            <span class="avg-score" [ngClass]="getScoreClass(q.avgScore)">
+              {{ q.avgScore ? (q.avgScore | number:'1.0-0') + '%' : '—' }}
+            </span>
+          </td>
+          <td class="date-cell">{{ q.createdAt | date:'dd MMM y' }}</td>
+          <td class="actions-cell">
+
+            <!-- Résultats — toujours visible -->
+            <button class="btn-results"
+                    [routerLink]="['/admin/quiz', q.id, 'results']"
+                    title="View Results">
+              📊
+            </button>
+
+            <!-- DRAFT → Publier -->
+            <button class="btn-publish"
+                    (click)="publishQuiz(q.id)"
+                    *ngIf="q.status === 'DRAFT'"
+                    title="Publish">
+              🚀
+            </button>
+
+            <!-- PUBLISHED → Archiver -->
+            <button class="btn-archive"
+                    (click)="archiveQuiz(q.id)"
+                    *ngIf="q.status === 'PUBLISHED'"
+                    title="Archive">
+              🗄️
+            </button>
+
+            <!-- ARCHIVED → Remettre en Draft -->
+            <button class="btn-draft"
+                    (click)="setDraft(q.id)"
+                    *ngIf="q.status === 'ARCHIVED'"
+                    title="Set back to Draft">
+              📝
+            </button>
+
+            <!-- Supprimer — toujours visible -->
+            <button class="btn-delete"
+                    (click)="deleteQuiz(q.id)"
+                    title="Delete">
+              🗑️
+            </button>
+
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty -->
+  <ng-template #empty>
+    <div class="empty-state">
+      <div class="empty-icon">🎮</div>
+      <h3>No quizzes found</h3>
+      <p>Quizzes created by tutors will appear here</p>
+    </div>
+  </ng-template>
+
+</div>

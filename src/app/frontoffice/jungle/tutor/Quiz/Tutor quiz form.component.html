@@ -1,0 +1,113 @@
+<section class="tutor-quiz-form">
+    <div class="form-header">
+        <h2>
+            <i class="fa-solid fa-pen-to-square"></i>
+            {{ isEditMode ? 'Edit Quiz' : 'Create Quiz' }}
+        </h2>
+    </div>
+
+    <p *ngIf="loading" class="loading">Loading...</p>
+    <p *ngIf="errorMessage" class="error">{{ errorMessage }}</p>
+    <p *ngIf="successMessage" class="success">{{ successMessage }}</p>
+
+<form *ngIf="!loading && (canEdit || !isEditMode)" (ngSubmit)="save()" class="quiz-form">
+        <div class="form-group">
+            <label for="title">Title *</label>
+            <input id="title" type="text" [(ngModel)]="quiz.title" name="title" placeholder="Quiz title" required />
+        </div>
+
+        <div class="form-group">
+            <label for="description">Description</label>
+            <textarea id="description" [(ngModel)]="quiz.description" name="description" rows="3"
+                placeholder="Quiz description"></textarea>
+        </div>
+
+        <div class="form-row">
+            <div class="form-group">
+                <label for="level">Level</label>
+                <select id="level" [(ngModel)]="quiz.level" name="level">
+                    <option *ngFor="let l of levels" [value]="l">{{ l }}</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="passingScore">Passing Score (%)</label>
+                <input id="passingScore" type="number" [(ngModel)]="quiz.passingScore" name="passingScore" min="0"
+                    max="100" />
+            </div>
+
+            <div class="form-group">
+                <label for="duration">Duration (mins)</label>
+                <input id="duration" type="number" [(ngModel)]="quiz.duration" name="duration" min="5" max="300"
+                    required />
+            </div>
+
+            <div class="form-group">
+                <label for="maxAttempts">Max Attempts</label>
+                <input id="maxAttempts" type="number" [(ngModel)]="quiz.maxAttempts" name="maxAttempts" min="1" max="10"
+                    required />
+            </div>
+
+            <div class="form-group">
+                <label for="status">Status</label>
+                <select id="status" [(ngModel)]="quiz.status" name="status">
+                    <option value="DRAFT">Draft</option>
+                    <option value="PUBLISHED">Published</option>
+                    <option value="ARCHIVED">Archived</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="questions-section">
+            <h3>Questions</h3>
+            <div *ngFor="let q of quiz.questions; let qIndex = index" class="question-card">
+                <div class="question-header">
+                    <h4>Question {{ qIndex + 1 }}</h4>
+                    <button type="button" class="btn-icon danger" (click)="removeQuestion(qIndex)">
+                        <i class="fa-solid fa-trash"></i>
+                    </button>
+                </div>
+                <div class="form-group">
+                    <label>Question Text *</label>
+                    <textarea [(ngModel)]="q.text" [name]="'q' + qIndex + 'text'" rows="2" placeholder="Question text"
+                        required></textarea>
+                </div>
+                <div class="form-group">
+                    <label>Points</label>
+                    <input type="number" [(ngModel)]="q.points" [name]="'q' + qIndex + 'points'" min="1" max="100" />
+                </div>
+
+                <div class="answers-section">
+                    <label>Answers</label>
+                    <div *ngFor="let ans of q.answers; let aIndex = index" class="answer-row">
+                        <input type="text" [(ngModel)]="ans.text" [name]="'q' + qIndex + 'a' + aIndex + 'text'"
+                            placeholder="Answer {{ aIndex + 1 }}" required />
+                        <label>
+                            <input type="checkbox" [(ngModel)]="ans.isCorrect"
+                                [name]="'q' + qIndex + 'a' + aIndex + 'correct'" /> Correct
+                        </label>
+                        <button type="button" class="btn-icon danger" (click)="removeAnswer(qIndex, aIndex)"
+                            *ngIf="q.answers.length > 2">
+                            <i class="fa-solid fa-times"></i>
+                        </button>
+                    </div>
+                    <button type="button" class="btn-add-answer" (click)="addAnswer(qIndex)">
+                        <i class="fa-solid fa-plus"></i> Add Answer
+                    </button>
+                </div>
+            </div>
+
+            <button type="button" class="btn-create" (click)="addQuestion()">
+                <i class="fa-solid fa-plus"></i> Add Question
+            </button>
+        </div>
+
+        <div class="form-actions">
+            <button type="button" class="btn-cancel" (click)="cancel()">Cancel</button>
+            <button type="submit" class="btn-save" [disabled]="saving">
+                <i class="fa-solid" [class.fa-spinner]="saving" [class.fa-floppy-disk]="!saving"></i>
+                {{ saving ? 'Saving...' : 'Save' }}
+            </button>
+        </div>
+    </form>
+</section>

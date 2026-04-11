@@ -1,0 +1,149 @@
+<div class="stats-wrapper">
+
+  <!-- Header -->
+  <div class="page-header">
+    <button class="btn-back" (click)="goBack()" title="Back">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+    </button>
+    <div class="header-text">
+      <h2>Quiz Statistics</h2>
+      <span class="header-sub">{{ quiz?.title }}</span>
+    </div>
+  </div>
+
+  <div class="loading-state" *ngIf="loading">
+    <div class="loader-track"><div class="loader-bar"></div></div>
+    <p>Loading statistics…</p>
+  </div>
+  <div class="error-state" *ngIf="error">{{ error }}</div>
+
+  <ng-container *ngIf="!loading && stats">
+
+    <!-- ══ KPI GRID 3 columns ══ -->
+    <div class="kpi-grid">
+
+      <div class="kpi-card kpi-teal">
+        <div class="kpi-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        </div>
+        <div class="kpi-val">{{ stats.totalAttempts }}</div>
+        <div class="kpi-lbl">Total Attempts</div>
+      </div>
+
+      <div class="kpi-card kpi-green">
+        <div class="kpi-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>
+        </div>
+        <div class="kpi-val">{{ stats.passed }}</div>
+        <div class="kpi-lbl">Passed</div>
+      </div>
+
+      <div class="kpi-card kpi-red">
+        <div class="kpi-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </div>
+        <div class="kpi-val">{{ stats.failed }}</div>
+        <div class="kpi-lbl">Failed</div>
+      </div>
+
+      <div class="kpi-card kpi-purple">
+        <div class="kpi-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        </div>
+        <div class="kpi-val">{{ stats.gameOver }}</div>
+        <div class="kpi-lbl">Game Over</div>
+      </div>
+
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+        </div>
+        <div class="kpi-val">{{ stats.passRate }}%</div>
+        <div class="kpi-lbl">Pass Rate</div>
+      </div>
+
+      <div class="kpi-card kpi-orange">
+        <div class="kpi-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div class="kpi-val">{{ stats.avgScore | number:'1.0-1' }}%</div>
+        <div class="kpi-lbl">Avg Score</div>
+      </div>
+
+      <div class="kpi-card kpi-gold">
+        <div class="kpi-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89L17 22l-5-3-5 3 1.523-9.11"/></svg>
+        </div>
+        <div class="kpi-val">{{ stats.bestScore | number:'1.0-1' }}%</div>
+        <div class="kpi-lbl">Best Score</div>
+      </div>
+
+      <div class="kpi-card kpi-cyan">
+        <div class="kpi-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        </div>
+        <div class="kpi-val">{{ formatDuration(stats.avgDuration) }}</div>
+        <div class="kpi-lbl">Avg Duration</div>
+      </div>
+
+      <div class="kpi-card kpi-yellow">
+        <div class="kpi-icon-wrap">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+        </div>
+        <div class="kpi-val">{{ stats.totalXpGiven }}</div>
+        <div class="kpi-lbl">XP Distributed</div>
+      </div>
+
+    </div>
+
+    <!-- ══ PASS / FAIL BAR ══ -->
+    <div class="panel">
+      <div class="panel-head">
+        <span class="panel-title">Pass / Fail Distribution</span>
+        <div class="dist-legend">
+          <span class="leg-dot leg-pass"></span> Passed
+          <span class="leg-dot leg-fail"></span> Failed
+        </div>
+      </div>
+      <div class="dist-track">
+        <div class="dist-pass" [style.width.%]="stats.passRate">
+          <span *ngIf="stats.passRate > 10">{{ stats.passRate }}%</span>
+        </div>
+        <div class="dist-fail" [style.width.%]="100 - stats.passRate">
+          <span *ngIf="(100 - stats.passRate) > 10">{{ 100 - stats.passRate }}%</span>
+        </div>
+      </div>
+      <div class="dist-sub">
+        <span>{{ stats.passed }} passed out of {{ stats.totalAttempts }} attempts</span>
+      </div>
+    </div>
+
+    <!-- ══ BAR CHART ══ -->
+    <div class="panel" *ngIf="scoreByDayEntries.length > 0">
+      <div class="panel-head">
+        <span class="panel-title">Average Score by Day</span>
+        <span class="panel-chip">last 14 days</span>
+      </div>
+      <div class="bar-chart">
+        <div class="bar-col" *ngFor="let entry of scoreByDayEntries">
+          <span class="bar-tip">{{ entry.score }}%</span>
+          <div class="bar-fill"
+               [style.height.%]="getBarHeight(entry.score)"
+               [style.background]="getBarColor(entry.score)">
+          </div>
+          <span class="bar-lbl">{{ formatDate(entry.date) }}</span>
+        </div>
+      </div>
+      <div class="chart-y-labels">
+        <span>100%</span><span>75%</span><span>50%</span><span>25%</span><span>0%</span>
+      </div>
+    </div>
+
+    <div class="empty-chart" *ngIf="scoreByDayEntries.length === 0">
+      <span>📭</span>
+      <p>No attempt data yet to display the chart.</p>
+    </div>
+
+  </ng-container>
+
+</div>

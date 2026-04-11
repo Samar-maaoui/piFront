@@ -1,0 +1,194 @@
+<section class="sessions-page">
+
+  <!-- Page Header -->
+  <div class="page-header">
+    <div class="header-left">
+      <h1 class="page-title">My Sessions</h1>
+      <p class="page-subtitle">Track and manage your tutoring sessions</p>
+    </div>
+    <div class="header-stats">
+      <div class="stat-pill">
+        <span class="stat-num">{{ getTabCount('SCHEDULED') }}</span>
+        <span class="stat-lbl">Upcoming</span>
+      </div>
+      <div class="stat-pill stat-pill--green">
+        <span class="stat-num">{{ getTabCount('STARTED') }}</span>
+        <span class="stat-lbl">Ongoing</span>
+      </div>
+      <div class="stat-pill stat-pill--gray">
+        <span class="stat-num">{{ getTabCount('CLOSED') }}</span>
+        <span class="stat-lbl">Closed</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tab Navigation -->
+  <div class="tab-nav">
+    <button
+      *ngFor="let tab of tabs"
+      class="tab-nav__item"
+      [class.tab-nav__item--active]="activeTab === tab.value"
+      (click)="activeTab = tab.value; filterSessions()">
+      {{ tab.label }}
+      <span class="tab-nav__count">{{ getTabCount(tab.value) }}</span>
+    </button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="state-loading">
+    <div class="spinner"></div>
+    <p>Loading sessions...</p>
+  </div>
+
+  <!-- Empty -->
+  <div *ngIf="!loading && filteredSessions.length === 0" class="state-empty">
+    <div class="state-empty__box">
+      <p class="state-empty__title">No sessions found</p>
+      <p class="state-empty__sub">{{ getEmptyMessage() }}</p>
+    </div>
+  </div>
+
+  <!-- Sessions Table -->
+  <div class="table-card" *ngIf="!loading && filteredSessions.length > 0">
+    <table class="sessions-table">
+      <thead>
+        <tr>
+          <th>Session</th>
+          <th>Tutor</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Duration</th>
+          <th>Status</th>
+          <th>Feedback</th>
+          <th>Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let session of filteredSessions"
+            class="sessions-table__row"
+            [class.sessions-table__row--ongoing]="session.status === 'ONGOING'"
+            [class.sessions-table__row--done]="session.status === 'DONE'">
+
+         
+
+          <td class="td-tutor">
+            <div class="tutor-cell">
+              <div class="tutor-avatar">{{ getTutorName(session).charAt(0) }}</div>
+              <span class="tutor-name">{{ getTutorName(session) }}</span>
+            </div>
+          </td>
+
+          <td class="td-date">{{ formatSessionDate(session) }}</td>
+
+          <td class="td-time">
+            {{ session.booking?.startTime || '—' }}
+            <span *ngIf="session.booking?.endTime"> — {{ session.booking?.endTime }}</span>
+          </td>
+
+          <td class="td-duration">
+            {{ session.duration ? session.duration + ' min' : '—' }}
+          </td>
+
+          <td class="td-status">
+            <span class="status-badge" [ngClass]="getStatusClass(session.status)">
+              {{ getStatusLabel(getSessionDisplayStatus(session)) }}
+            </span>
+          </td>
+
+          <td class="td-feedback">
+            <div *ngIf="session.feedback" class="feedback-score">
+              <span class="feedback-score__num">{{ session.feedback.rating }}</span>
+              <span class="feedback-score__max">/5</span>
+            </div>
+            <div *ngIf="session.feedback?.comment" class="feedback-comment">
+              {{ session.feedback?.comment }}
+            </div>
+            <span *ngIf="!session.feedback && getSessionDisplayStatus(session) === 'FEEDBACK_PENDING'" class="feedback-pending">Pending</span>
+            <span *ngIf="!session.feedback && getSessionDisplayStatus(session) !== 'FEEDBACK_PENDING'">—</span>
+          </td>
+
+          <td class="td-actions">
+            <div class="action-group">
+              <button *ngIf="session.status === 'SCHEDULED'" class="btn btn--primary btn--sm" (click)="startSession(session)">Start</button>
+              <button *ngIf="session.status === 'ONGOING'" class="btn btn--danger btn--sm" (click)="endSession(session)">End Session</button>
+              <a *ngIf="session.meetingLink && session.status === 'ONGOING'" [href]="session.meetingLink" target="_blank" class="btn btn--success btn--sm">Join Meeting</a>
+              <button *ngIf="session.status === 'DONE' && !session.feedback" class="btn btn--outline btn--sm" (click)="openFeedbackModal(session)">Leave Review</button>
+              <button *ngIf="session.status === 'DONE' && session.feedback" class="btn btn--outline btn--sm" (click)="openFeedbackModal(session)">Edit Review</button>
+              <button *ngIf="session.feedback" class="btn btn--ghost btn--sm" (click)="viewFeedback(session)">View Review</button>
+              <button *ngIf="session.status === 'DONE' && session.feedback" class="btn btn--ghost btn--sm" (click)="deleteFeedback(session)">Delete Review</button>
+            </div>
+          </td>
+
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Feedback Modal -->
+  <div *ngIf="showFeedbackModal" class="modal-backdrop" (click)="closeFeedbackModal()">
+    <div class="modal" (click)="$event.stopPropagation()">
+
+      <div class="modal__header">
+        <div>
+          <h3 class="modal__title">{{ isEditingFeedback ? 'Edit Review' : 'Submit Review' }}</h3>
+          <p class="modal__subtitle">Session with {{ getTutorName(selectedSession) }}</p>
+        </div>
+        <button class="modal__close" (click)="closeFeedbackModal()">Close</button>
+      </div>
+
+      <div class="modal__body">
+
+        <div class="session-summary" *ngIf="selectedSession">
+          <div class="session-summary__row">
+            <span class="session-summary__label">Date</span>
+            <span class="session-summary__value">{{ formatSessionDate(selectedSession) }}</span>
+          </div>
+          <div class="session-summary__row">
+            <span class="session-summary__label">Duration</span>
+            <span class="session-summary__value">{{ selectedSession.duration }} min</span>
+          </div>
+         
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Overall Rating</label>
+          <div class="rating-row">
+            <button *ngFor="let star of [1,2,3,4,5]"
+              class="rating-btn"
+              [class.rating-btn--active]="feedbackRating >= star"
+              (click)="feedbackRating = star">
+              {{ star }}
+            </button>
+          </div>
+          <p class="rating-hint">
+            <ng-container [ngSwitch]="feedbackRating">
+              <span *ngSwitchCase="1">Poor</span>
+              <span *ngSwitchCase="2">Fair</span>
+              <span *ngSwitchCase="3">Good</span>
+              <span *ngSwitchCase="4">Very Good</span>
+              <span *ngSwitchCase="5">Excellent</span>
+            </ng-container>
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">Comment <span class="form-optional">(optional)</span></label>
+          <textarea class="form-textarea" [(ngModel)]="feedbackComment"
+            placeholder="Share your experience with this session..." rows="4">
+          </textarea>
+        </div>
+
+      </div>
+
+      <div class="modal__footer">
+        <button class="btn btn--outline" (click)="closeFeedbackModal()">Cancel</button>
+        <button class="btn btn--primary" (click)="submitFeedback()"
+          [disabled]="!feedbackRating || submittingFeedback">
+          {{ submittingFeedback ? (isEditingFeedback ? 'Updating...' : 'Submitting...') : (isEditingFeedback ? 'Update Review' : 'Submit Review') }}
+        </button>
+      </div>
+
+    </div>
+  </div>
+
+</section>

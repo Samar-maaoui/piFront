@@ -1,0 +1,57 @@
+<header class="header">
+  <div class="container">
+    <div class="header-content">
+      <!-- Logo -->
+      <div class="logo">
+        <a href="/public" (click)="closeMenu()">
+          <span class="logo-text">Jungle in English</span>
+        </a>
+      </div>
+
+      <!-- Navigation Menu -->
+      <nav class="nav-menu" [class.active]="menuOpen">
+        <ul>
+          <li><a href="#about" (click)="closeMenu()">About</a></li>
+          <li><a href="#training" (click)="closeMenu()">Training</a></li>
+          <li><a href="#clubs" (click)="closeMenu()">Clubs</a></li>
+          <li><a href="#events" (click)="closeMenu()">Events</a></li>
+          <li><a href="#student-space" (click)="closeMenu()">Student Space</a></li>
+          <li><a href="#contact" (click)="closeMenu()">Contact</a></li>
+        </ul>
+      </nav>
+
+      <!-- Header Actions -->
+      <div class="header-actions">
+        <!-- Language Selector -->
+        <div class="language-selector">
+          <button
+            class="lang-btn"
+            [class.active]="currentLanguage === 'en'"
+            (click)="switchLanguage('en')"
+          >
+            EN
+          </button>
+          <button
+            class="lang-btn"
+            [class.active]="currentLanguage === 'fr'"
+            (click)="switchLanguage('fr')"
+          >
+            FR
+          </button>
+        </div>
+
+        <!-- Auth Buttons -->
+        <a routerLink="/login" class="btn btn-primary" (click)="closeMenu()">Login</a>
+        <a routerLink="/signup" class="btn btn-secondary" (click)="closeMenu()">Sign Up</a>
+
+        <!-- Mobile Menu Toggle -->
+        <button class="menu-toggle" (click)="toggleMenu()" [class.active]="menuOpen">
+          <span></span>
+          <span></span>
+          <span></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</header>
+

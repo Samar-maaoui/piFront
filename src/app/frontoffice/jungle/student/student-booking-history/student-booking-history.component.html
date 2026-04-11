@@ -1,0 +1,171 @@
+<div class="page-wrapper">
+
+  <!-- Header -->
+  <div class="page-hero">
+    <div class="hero-left">
+      <div class="hero-badge">History</div>
+      <h1 class="hero-title">My Bookings</h1>
+      <p class="hero-subtitle">View all your sessions and leave a review</p>
+    </div>
+    <div class="hero-stats">
+      <div class="hero-stat">
+        <span class="stat-value">{{ history.length }}</span>
+        <span class="stat-label">Total</span>
+      </div>
+      <div class="hero-stat">
+        <span class="stat-value">{{ completedCount }}</span>
+        <span class="stat-label">Completed</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Filter Bar -->
+  <div class="filter-bar">
+    <div class="search-box">
+      <span class="search-icon"></span>
+      <input type="text" class="search-input" placeholder="Search..."
+             [(ngModel)]="searchQuery" (input)="applyFilter()">
+    </div>
+    <div class="filter-chips">
+      <button class="chip" *ngFor="let f of filters"
+              [class.active]="activeFilter === f.value"
+              (click)="activeFilter = f.value; applyFilter()">
+        {{ f.icon }} {{ f.label }}
+      </button>
+    </div>
+  </div>
+
+  <!-- Error -->
+  <div class="error-banner" *ngIf="errorMessage">
+    <span>{{ errorMessage }}</span>
+    <button (click)="errorMessage = ''">×</button>
+  </div>
+
+  <!-- Loading -->
+  <div class="loading-state" *ngIf="isLoading">
+    <div class="loader-ring"></div>
+    <p>Loading...</p>
+  </div>
+
+  <!-- Table -->
+  <div class="history-table-wrap" *ngIf="!isLoading && filteredHistory.length > 0">
+    <table class="history-table">
+      <thead>
+        <tr>
+          <th>#</th>
+          <th>Date</th>
+          <th>Time</th>
+          <th>Type</th>
+          <th>Tutor</th>
+          <th>Status</th>
+          <th>Reason</th>
+          <th>Review</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let b of filteredHistory" [ngClass]="'row-' + b.status?.toLowerCase()">
+          <td class="td-id">#{{ b.id }}</td>
+          <td class="td-date">
+            <div class="date-main">{{ b.sessionDate | date:'d MMM y' }}</div>
+            <div class="date-day">{{ b.sessionDate | date:'EEEE' }}</div>
+          </td>
+          <td class="td-time">{{ b.startTime | slice:0:5 }} – {{ b.endTime | slice:0:5 }}</td>
+          <td class="td-type">
+            <span class="type-chip">{{ getTypeLabel(b.type) }}</span>
+          </td>
+          <td class="td-tutor">
+            <div class="tutor-avatar">T{{ b.tutorId }}</div>
+          </td>
+          <td class="td-status">
+            <span class="status-pill" [ngClass]="'pill-' + b.status?.toLowerCase()">
+              {{ getStatusIcon(b.status) }} {{ getStatusLabel(b.status) }}
+            </span>
+          </td>
+          <!-- Rejection reason column -->
+          <td class="td-reason">
+            <span class="reason-pill" *ngIf="b.status === 'REJECTED' && (b.rejectionReason || b.cancellationReason)">
+              {{ b.rejectionReason || b.cancellationReason }}
+            </span>
+            <span class="no-feedback" *ngIf="!(b.status === 'REJECTED' && (b.rejectionReason || b.cancellationReason))">—</span>
+          </td>
+
+          <td class="td-feedback">
+            <div class="stars-display" *ngIf="b.session?.feedback">
+              <span *ngFor="let i of [1,2,3,4,5]"
+                    [style.color]="i <= (b.session?.feedback?.rating || 0) ? '#F6BD60' : '#ddd'">★</span>
+            </div>
+            <span class="no-feedback" *ngIf="b.status === 'COMPLETED' && !b.session?.feedback">
+              —
+            </span>
+          </td>
+          <td class="td-action">
+            <button class="btn-feedback"
+                    *ngIf="b.status === 'COMPLETED' && !b.session?.feedback"
+                    (click)="openFeedback(b)">
+               Noter
+            </button>
+            <button class="btn-edit-feedback"
+                    *ngIf="b.session?.feedback"
+                    (click)="openFeedback(b)">
+               Modifier
+            </button>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!isLoading && filteredHistory.length === 0">
+    <div class="empty-icon"></div>
+    <h3>No bookings found</h3>
+    <p>Your bookings will appear here</p>
+    <a routerLink="/student/tutors" class="btn-primary-action">Book a session</a>
+  </div>
+
+  <!-- Feedback Modal -->
+  <div class="modal-overlay" *ngIf="showFeedbackModal" (click)="closeFeedback()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h3> Leave a Review</h3>
+        <button class="modal-close" (click)="closeFeedback()">×</button>
+      </div>
+      <div class="modal-body">
+        <div class="session-recap">
+          <span> {{ selectedBooking?.sessionDate | date:'d MMM y' }}</span>
+          <span> {{ selectedBooking?.startTime | slice:0:5 }} – {{ selectedBooking?.endTime | slice:0:5 }}</span>
+        </div>
+
+        <div class="rating-section">
+          <div class="rating-label">Your rating</div>
+          <div class="star-picker">
+            <button class="star-btn" *ngFor="let i of [1,2,3,4,5]"
+                    [class.active]="(hoverRating || feedbackRating) >= i"
+                    (click)="feedbackRating = i"
+                    (mouseenter)="hoverRating = i"
+                    (mouseleave)="hoverRating = 0">★</button>
+          </div>
+          <div class="rating-hint">{{ getRatingLabel(hoverRating || feedbackRating) }}</div>
+        </div>
+
+        <div class="comment-section">
+          <label class="comment-label">Comment (optional)</label>
+          <textarea class="comment-input" [(ngModel)]="feedbackComment"
+                    placeholder="Describe your experience with this tutor..." rows="4"></textarea>
+        </div>
+
+        <div class="feedback-success" *ngIf="feedbackSuccess"> Review submitted!</div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" (click)="closeFeedback()">Cancel</button>
+        <button class="btn-confirm" (click)="submitFeedback()"
+                [disabled]="feedbackRating === 0 || isSubmitting">
+          <span *ngIf="isSubmitting" class="btn-spinner"></span>
+           Submit
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

@@ -1,0 +1,168 @@
+<!-- booking-list.component.html -->
+<div class="container-fluid py-4">
+
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2 class="fw-bold" style="color: #2D5757;">📅 My Bookings</h2>
+      <p class="text-muted mb-0">Manage your sessions with tutors</p>
+    </div>
+    <button class="btn btn-jie" routerLink="/admin/bookings/new">
+      + New Booking
+    </button>
+  </div>
+
+  <!-- Filters -->
+  <div class="card border-0 shadow-sm mb-4">
+    <div class="card-body">
+      <div class="row g-3 align-items-end">
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Status</label>
+          <select class="form-select" [(ngModel)]="selectedStatus" (change)="filterBookings()">
+            <option value="">All</option>
+            <option value="PENDING">Pending</option>
+            <option value="CONFIRMED">Accepted</option>
+            <option value="COMPLETED">Completed</option>
+            <option value="CANCELLED">Cancelled</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Type</label>
+          <select class="form-select" [(ngModel)]="selectedType" (change)="filterBookings()">
+            <option value="">All</option>
+            <option value="ONE_TO_ONE">One-to-One</option>
+            <option value="GROUP">Group</option>
+            <option value="INFO_SESSION">Info Session</option>
+          </select>
+        </div>
+        <div class="col-md-3">
+          <label class="form-label fw-semibold">Date</label>
+          <input type="date" class="form-control" [(ngModel)]="selectedDate" (change)="filterBookings()">
+        </div>
+        <div class="col-md-3">
+          <button class="btn btn-outline-secondary w-100" (click)="resetFilters()">
+            🔄 Reset
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats Cards -->
+  <div class="row g-3 mb-4">
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm text-center py-3">
+        <div class="fs-1 fw-bold" style="color:#2D5757;">{{ stats.total }}</div>
+        <div class="text-muted small">Total Bookings</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm text-center py-3">
+        <div class="fs-1 fw-bold text-warning">{{ stats.pending }}</div>
+        <div class="text-muted small">Pending</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm text-center py-3">
+        <div class="fs-1 fw-bold text-success">{{ stats.confirmed }}</div>
+        <div class="text-muted small">Accepted</div>
+      </div>
+    </div>
+    <div class="col-md-3">
+      <div class="card border-0 shadow-sm text-center py-3">
+        <div class="fs-1 fw-bold text-info">{{ stats.completed }}</div>
+        <div class="text-muted small">Completed</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Booking Cards -->
+  <div class="row g-3" *ngIf="filteredBookings.length > 0; else noBookings">
+    <div class="col-md-6 col-lg-4" *ngFor="let booking of filteredBookings">
+      <div class="card border-0 shadow-sm h-100 booking-card">
+        <!-- Card Header -->
+        <div class="card-header border-0 d-flex justify-content-between align-items-center"
+             style="background-color: #F7EDE2;">
+          <span class="badge" [ngClass]="getStatusClass(booking.status || '')">
+            {{ getBookingDisplayStatus(booking.status) }}
+          </span>
+          <span class="badge bg-secondary">{{ booking.type }}</span>
+        </div>
+
+        <!-- Card Body -->
+        <div class="card-body">
+          <h5 class="fw-bold mb-3" style="color:#2D5757;">
+            Session #{{ booking.id }}
+          </h5>
+
+          <div class="d-flex align-items-center mb-2">
+            <span class="me-2">📆</span>
+            <span>{{ booking.sessionDate | date:'EEEE, MMM d, y' }}</span>
+          </div>
+          <div class="d-flex align-items-center mb-2">
+            <span class="me-2">⏰</span>
+            <span>{{ booking.startTime }} – {{ booking.endTime }}</span>
+          </div>
+          <div class="d-flex align-items-center mb-2">
+            <span class="me-2">👨‍🏫</span>
+            <span>Tutor #{{ booking.tutorId }}</span>
+          </div>
+          <div class="d-flex align-items-center mb-3" *ngIf="booking.notes">
+            <span class="me-2">📝</span>
+            <span class="text-muted small">{{ booking.notes }}</span>
+          </div>
+
+          <!-- Meeting Link -->
+          <div *ngIf="booking.status === 'CONFIRMED' && booking.session?.meetingLink"
+               class="alert alert-success py-2 mb-3">
+            <small>🎥 <a [href]="booking.session?.meetingLink" target="_blank">Join Session</a></small>
+          </div>
+        </div>
+
+        <!-- Card Footer -->
+        <div class="card-footer bg-white border-0">
+          <div class="d-flex gap-2">
+            <button class="btn btn-sm btn-outline-jie flex-grow-1"
+                    [routerLink]="['/bookings', booking.id!]">
+              👁 View
+            </button>
+
+            <!-- student can edit pending bookings only -->
+            <button class="btn btn-sm btn-outline-warning flex-grow-1"
+                    *ngIf="currentRole === 'STUDENT' && booking.status === 'PENDING'"
+                    [routerLink]="['/bookings/edit', booking.id!]">
+              ✏️ Edit
+            </button>
+
+            <!-- student cancels; tutor/admin can also cancel -->
+            <button class="btn btn-sm btn-outline-danger flex-grow-1"
+                    *ngIf="(currentRole === 'STUDENT' && booking.status !== 'COMPLETED' && booking.status !== 'CANCELLED') || currentRole !== 'STUDENT'"
+                    (click)="cancelBooking(booking.id!)">
+              ❌ Cancel
+            </button>
+
+            <!-- tutor or admin confirm/reject pending -->
+            <ng-container *ngIf="currentRole === 'TUTOR' || currentRole === 'ADMIN'">
+              <button class="btn btn-sm btn-success flex-grow-1" *ngIf="booking.status === 'PENDING'"
+                      (click)="confirmBooking(booking.id!)">✅ Confirm</button>
+              <button class="btn btn-sm btn-danger flex-grow-1" *ngIf="booking.status === 'PENDING'"
+                      (click)="rejectBooking(booking.id!)">❌ Reject</button>
+            </ng-container>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Empty State -->
+  <ng-template #noBookings>
+    <div class="text-center py-5">
+      <div class="fs-1 mb-3">📭</div>
+      <h4 class="text-muted">No bookings found</h4>
+      <p class="text-muted">Start by booking a session with a tutor</p>
+      <button class="btn btn-jie" routerLink="/admin/bookings/new">
+        Book a Session
+      </button>
+    </div>
+  </ng-template>
+</div>

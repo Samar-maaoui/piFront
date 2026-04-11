@@ -1,0 +1,69 @@
+<div class="login-container">
+  <div class="login-card">
+    <h1>Welcome Back</h1>
+    <p class="subtitle">Sign in to your account</p>
+
+    <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+      <!-- Email -->
+      <div class="form-group">
+        <label for="email">Email <span class="required">*</span></label>
+        <input
+          type="email"
+          id="email"
+          class="form-control"
+          formControlName="email"
+          [class.is-invalid]="isFieldInvalid('email')"
+          placeholder="your.email@example.com"
+        />
+        <div class="error-message" *ngIf="isFieldInvalid('email')">
+          <span *ngIf="f['email'].errors?.['required']">Email is required</span>
+          <span *ngIf="f['email'].errors?.['email']">Please enter a valid email address</span>
+        </div>
+      </div>
+
+      <!-- Password -->
+      <div class="form-group">
+        <label for="password">Password <span class="required">*</span></label>
+        <input
+          type="password"
+          id="password"
+          class="form-control"
+          formControlName="password"
+          [class.is-invalid]="isFieldInvalid('password')"
+          placeholder="Your password"
+        />
+        <div class="error-message" *ngIf="isFieldInvalid('password')">
+          <span *ngIf="f['password'].errors?.['required']">Password is required</span>
+          <span *ngIf="f['password'].errors?.['minlength']">Password must be at least 8 characters</span>
+        </div>
+      </div>
+
+      <!-- Remember Me -->
+      <div class="form-group checkbox">
+        <input
+          type="checkbox"
+          id="rememberMe"
+          formControlName="rememberMe"
+        />
+        <label for="rememberMe">Remember me</label>
+      </div>
+
+      <!-- Submit Button -->
+      <button type="submit" class="btn-submit" [disabled]="!loginForm.valid || loading">
+        <span *ngIf="!loading">Sign In</span>
+        <span *ngIf="loading">Signing In...</span>
+      </button>
+
+      <!-- Error Message -->
+      <div class="error-message alert-error" *ngIf="errorMessage">
+        {{ errorMessage }}
+      </div>
+    </form>
+
+    <!-- Links -->
+    <div class="form-links">
+      <a href="#forgot-password" class="link">Forgot password?</a>
+      <a routerLink="/signup" class="link">Create an account</a>
+    </div>
+  </div>
+</div>

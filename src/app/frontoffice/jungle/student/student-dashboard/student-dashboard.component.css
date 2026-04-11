@@ -1,0 +1,122 @@
+/* ── Student Dashboard ── uses --fd-* tokens exclusively ── */
+.sd-page { max-width: 1100px; }
+
+/* Welcome banner */
+.fd-welcome-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--fd-header-bg);           /* teal */
+  border-radius: 12px;
+  padding: 1.75rem 2rem;
+  margin-bottom: 2rem;
+  border-bottom: 4px solid var(--fd-header-border);  /* gold */
+  box-shadow: 0 4px 16px rgba(45, 87, 87, 0.2);
+}
+
+.fd-welcome-left h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--fd-header-text);
+  margin: 0 0 0.4rem;
+}
+
+.fd-welcome-left p {
+  font-size: 0.9rem;
+  color: rgba(247, 237, 226, 0.72);
+  margin: 0;
+}
+
+.fd-role-pill {
+  background: var(--color-accent-gold);
+  color: var(--color-dark-teal);
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 0.35rem 1rem;
+  border-radius: 999px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Stats grid */
+.fd-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.fd-stat-card {
+  background: var(--fd-card-bg);
+  border: 1px solid var(--fd-card-border);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 1px 4px rgba(45, 87, 87, 0.07);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.fd-stat-card:hover {
+  box-shadow: 0 4px 16px rgba(45, 87, 87, 0.15);
+  transform: translateY(-2px);
+}
+
+.fd-stat-icon { font-size: 2rem; line-height: 1; }
+.fd-stat-info { display: flex; flex-direction: column; }
+
+.fd-stat-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-gray-medium);
+}
+
+.fd-stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-dark-teal);
+  line-height: 1.2;
+}
+
+/* Quick links */
+.fd-quick-section h3 {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--color-gray-medium);
+  margin-bottom: 1rem;
+}
+
+.fd-quick-links { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+.fd-quick-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  background: var(--fd-card-bg);
+  border: 1px solid var(--fd-card-border);
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--color-dark-teal);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  box-shadow: 0 1px 3px rgba(45,87,87,0.06);
+}
+
+.fd-quick-link:hover {
+  background: var(--color-accent-gold);
+  border-color: var(--color-accent-gold);
+  color: var(--color-dark-teal);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 900px) { .fd-stats-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 500px) { .fd-stats-grid { grid-template-columns: 1fr; } }
+

@@ -1,0 +1,68 @@
+/* ── Frontoffice Dashboard Sidebar ───────────────────────────────
+   Warm cream tones — completely separate from backoffice dark sidebar.
+──────────────────────────────────────────────────────────────── */
+
+.fd-sidebar {
+  width: 230px;
+  min-height: 100%;
+  background: var(--fd-sidebar-bg);
+  border-right: 1px solid var(--fd-sidebar-border);
+  padding: 1.25rem 0;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Section header label */
+.fd-sidebar-label {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--color-gray-medium);
+  padding: 0 1.25rem 0.75rem;
+  border-bottom: 1px solid var(--fd-sidebar-border);
+  margin-bottom: 0.5rem;
+}
+
+.fd-sidebar-nav {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.4rem 0.75rem;
+}
+
+.fd-sidebar-link {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.65rem 0.85rem;
+  text-decoration: none;
+  color: var(--fd-sidebar-link);
+  font-size: 0.9rem;
+  font-weight: 500;
+  border-radius: 8px;
+  border-left: 3px solid transparent;
+  transition: background 0.2s, color 0.2s, border-color 0.2s;
+}
+
+.fd-sidebar-icon {
+  font-size: 1.05rem;
+  width: 1.3rem;
+  text-align: center;
+  flex-shrink: 0;
+}
+
+.fd-sidebar-link:hover {
+  background: var(--fd-sidebar-hover-bg);
+  color: var(--color-dark-teal);
+  border-left-color: var(--color-gray-medium);
+}
+
+.fd-sidebar-link.active {
+  background: var(--fd-sidebar-active-bg);
+  color: var(--fd-sidebar-active-text);
+  font-weight: 600;
+  border-left-color: var(--fd-sidebar-active-accent);
+}
+

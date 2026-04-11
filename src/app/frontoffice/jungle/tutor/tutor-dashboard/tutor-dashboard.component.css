@@ -1,0 +1,177 @@
+/* ── Notification banner ── */
+.notif-banner {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  background: #fff7ed;
+  border: 1px solid #fb923c;
+  border-left: 5px solid #f97316;
+  border-radius: 10px;
+  padding: 14px 18px;
+  margin-bottom: 20px;
+  animation: slideDown .3s ease;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+.notif-icon { font-size: 22px; flex-shrink: 0; }
+.notif-text { flex: 1; font-size: 14px; color: #7c2d12; }
+.notif-text strong { color: #c2410c; }
+.notif-btn {
+  padding: 7px 16px;
+  background: #f97316;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background .2s;
+}
+.notif-btn:hover { background: #ea6c00; }
+.notif-close {
+  background: none;
+  border: none;
+  color: #9a3412;
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 6px;
+  border-radius: 4px;
+  line-height: 1;
+  flex-shrink: 0;
+}
+.notif-close:hover { background: #fee2ca; }
+
+/* ── Tutor Dashboard ── uses --fd-* tokens with purple accent ── */
+.td-page { max-width: 1100px; }
+
+/* Welcome banner — purple variant for tutor */
+.fd-welcome-banner {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: var(--color-accent-purple);    /* #3D3D60 indigo-purple */
+  border-radius: 12px;
+  padding: 1.75rem 2rem;
+  margin-bottom: 2rem;
+  border-bottom: 4px solid var(--color-accent-gold);
+  box-shadow: 0 4px 16px rgba(61, 61, 96, 0.25);
+}
+
+.fd-welcome-banner--tutor {
+  background: var(--color-accent-purple);
+  box-shadow: 0 4px 16px rgba(61, 61, 96, 0.25);
+}
+
+.fd-welcome-left h2 {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--fd-header-text);
+  margin: 0 0 0.4rem;
+}
+
+.fd-welcome-left p {
+  font-size: 0.9rem;
+  color: rgba(247, 237, 226, 0.72);
+  margin: 0;
+}
+
+.fd-role-pill {
+  background: var(--color-accent-gold);
+  color: var(--color-dark-teal);
+  font-size: 0.76rem;
+  font-weight: 700;
+  padding: 0.35rem 1rem;
+  border-radius: 999px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.fd-role-pill--tutor {
+  background: #c5b8f0;
+  color: var(--color-accent-purple);
+}
+
+/* Stats grid */
+.fd-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+}
+
+.fd-stat-card {
+  background: var(--fd-card-bg);
+  border: 1px solid var(--fd-card-border);
+  border-radius: 10px;
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  box-shadow: 0 1px 4px rgba(61, 61, 96, 0.07);
+  transition: box-shadow 0.2s, transform 0.2s;
+}
+
+.fd-stat-card:hover {
+  box-shadow: 0 4px 16px rgba(61, 61, 96, 0.18);
+  transform: translateY(-2px);
+}
+
+.fd-stat-icon { font-size: 2rem; line-height: 1; }
+.fd-stat-info { display: flex; flex-direction: column; }
+
+.fd-stat-label {
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--color-gray-medium);
+}
+
+.fd-stat-value {
+  font-size: 1.6rem;
+  font-weight: 700;
+  color: var(--color-accent-purple);
+  line-height: 1.2;
+}
+
+/* Quick links */
+.fd-quick-section h3 {
+  font-size: 0.78rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.09em;
+  color: var(--color-gray-medium);
+  margin-bottom: 1rem;
+}
+
+.fd-quick-links { display: flex; gap: 1rem; flex-wrap: wrap; }
+
+.fd-quick-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  background: var(--fd-card-bg);
+  border: 1px solid var(--fd-card-border);
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--color-accent-purple);
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: background 0.2s, border-color 0.2s, transform 0.2s;
+  box-shadow: 0 1px 3px rgba(61,61,96,0.06);
+}
+
+.fd-quick-link:hover {
+  background: var(--color-accent-gold);
+  border-color: var(--color-accent-gold);
+  color: var(--color-dark-teal);
+  transform: translateY(-2px);
+}
+
+@media (max-width: 900px) { .fd-stats-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 500px) { .fd-stats-grid { grid-template-columns: 1fr; } }
+
