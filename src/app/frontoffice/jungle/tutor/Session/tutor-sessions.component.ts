@@ -5,6 +5,7 @@ import { SessionService } from '../../../../backoffice/ReservationSession/Sessio
 import { SessionFeedbackService } from '../../../../backoffice/ReservationSession/Session/services/session-feedback.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { Session, getSessionDisplayStatus, getSessionStatusLabel } from '../../../../core/models/Session';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-tutor-sessions',
@@ -83,30 +84,80 @@ export class TutorSessionsComponent implements OnInit {
 
   startSession(id: number | undefined): void {
     if (!id) return;
+    
+    const session = this.sessions.find(s => s.id === id);
+    if (session && session.booking?.sessionDate && session.booking?.startTime) {
+      const scheduledDateTimeStr = `${session.booking.sessionDate}T${session.booking.startTime}`;
+      const scheduledDate = new Date(scheduledDateTimeStr);
+      const now = new Date();
+      
+      if (now < scheduledDate) {
+        Swal.fire({
+          icon: 'warning',
+          title: 'Trop tôt',
+          text: 'Vous ne pouvez pas démarrer la session avant l\'heure prévue.',
+        });
+        return;
+      }
+    }
+
     this.sessionService.start(id).subscribe({
       next: () => this.loadSessions(),
-      error: (err) => alert(err.error?.message || 'Error starting session')
+      error: (err) => Swal.fire('Erreur', err.error?.message || 'Error starting session', 'error')
     });
   }
 
   endSession(id: number | undefined): void {
     if (!id) return;
-    if (confirm('End this session now?')) {
-      this.sessionService.end(id).subscribe({
-        next: () => this.loadSessions(),
-        error: (err) => alert(err.error?.message || 'Error ending session')
-      });
-    }
+    const session = this.sessions.find(s => s.id === id);
+    const dateStr = session?.booking?.sessionDate || '';
+    const student = session?.booking?.studentId || '';
+
+    Swal.fire({
+      title: 'Terminer la session ?',
+      text: `Voulez-vous vraiment terminer la session du ${dateStr} avec l'étudiant #${student} ?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Oui, terminer',
+      cancelButtonText: 'Annuler'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.sessionService.end(id).subscribe({
+          next: () => {
+            Swal.fire('Terminée', 'La session a été terminée.', 'success');
+            this.loadSessions();
+          },
+          error: (err) => Swal.fire('Erreur', err.error?.message || 'Error ending session', 'error')
+        });
+      }
+    });
   }
 
   markMissed(id: number | undefined): void {
     if (!id) return;
-    if (confirm('Mark student as absent?')) {
-      this.sessionService.missed(id).subscribe({
-        next: () => this.loadSessions(),
-        error: (err) => alert(err.error?.message)
-      });
-    }
+    const session = this.sessions.find(s => s.id === id);
+    const dateStr = session?.booking?.sessionDate || '';
+    const student = session?.booking?.studentId || '';
+
+    Swal.fire({
+      title: 'Signaler une absence ?',
+      text: `Voulez-vous marquer l'étudiant #${student} comme absent pour la session du ${dateStr} ?`,
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Oui, absent',
+      confirmButtonColor: '#d33',
+      cancelButtonText: 'Annuler'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.sessionService.missed(id).subscribe({
+          next: () => {
+            Swal.fire('Signalé', "L'étudiant a été marqué comme absent.", 'success');
+            this.loadSessions();
+          },
+          error: (err) => Swal.fire('Erreur', err.error?.message || 'Erreur', 'error')
+        });
+      }
+    });
   }
 
   getSessionStatusLabel(status: string): string {
@@ -133,11 +184,13 @@ export class TutorSessionsComponent implements OnInit {
   viewFeedback(session: Session): void {
     const feedback = session.feedback;
     if (!feedback) {
-      alert('Aucun feedback disponible pour cette session.');
+      Swal.fire('Info', 'Aucun feedback disponible pour cette session.', 'info');
       return;
     }
-    alert(
-      `Feedback for session #${session.id}\nRating: ${feedback.rating}/5\nComment: ${feedback.comment || 'Aucun commentaire'}`
-    );
+    Swal.fire({
+      title: `Feedback (Session #${session.id})`,
+      html: `<strong>Note:</strong> ${feedback.rating}/5<br><br><strong>Commentaire:</strong><br>${feedback.comment || 'Aucun commentaire'}`,
+      icon: 'info'
+    });
   }
 }

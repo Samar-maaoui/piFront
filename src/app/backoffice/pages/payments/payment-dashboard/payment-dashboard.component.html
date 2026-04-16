@@ -1,0 +1,140 @@
+<div class="dash-container">
+  <!-- Header -->
+  <div class="dash-header">
+    <div>
+      <h2>📊 Payment Dashboard</h2>
+      <p>Vue globale des paiements du microservice</p>
+    </div>
+    <a routerLink="/admin/payments/events" class="btn-view-all">
+      Voir tous les paiements →
+    </a>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="loading-state">⏳ Chargement du dashboard...</div>
+
+  <ng-container *ngIf="!loading">
+    <!-- KPI Cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card kpi-green">
+        <div class="kpi-icon">💰</div>
+        <div class="kpi-info">
+          <span class="kpi-value"
+            >{{ totalRevenue | number: "1.0-2" }} TND</span
+          >
+          <span class="kpi-label">Revenus totaux</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-blue">
+        <div class="kpi-icon">✅</div>
+        <div class="kpi-info">
+          <span class="kpi-value">{{ paidCount }}</span>
+          <span class="kpi-label">Paiements réussis</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-orange">
+        <div class="kpi-icon">⏳</div>
+        <div class="kpi-info">
+          <span class="kpi-value">{{ pendingCount }}</span>
+          <span class="kpi-label">En attente</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-red">
+        <div class="kpi-icon">❌</div>
+        <div class="kpi-info">
+          <span class="kpi-value">{{ failedCount }}</span>
+          <span class="kpi-label">Échoués</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-purple">
+        <div class="kpi-icon">📈</div>
+        <div class="kpi-info">
+          <span class="kpi-value">{{ successRate }}%</span>
+          <span class="kpi-label">Taux de succès</span>
+        </div>
+      </div>
+      <div class="kpi-card kpi-gray">
+        <div class="kpi-icon">📋</div>
+        <div class="kpi-info">
+          <span class="kpi-value">{{ payments.length }}</span>
+          <span class="kpi-label">Total transactions</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- Graphiques ligne 1 -->
+    <div class="charts-row">
+      <div class="chart-card chart-large">
+        <div class="chart-title">📅 Évolution des revenus par jour</div>
+        <div class="chart-body">
+          <canvas #lineChart></canvas>
+        </div>
+      </div>
+      <div class="chart-card chart-small">
+        <div class="chart-title">🟢 Répartition par statut</div>
+        <div class="chart-body">
+          <canvas #donutChart></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Graphique ligne 2 -->
+    <div class="charts-row">
+      <div class="chart-card chart-full">
+        <div class="chart-title">💳 Revenus par méthode de paiement</div>
+        <div class="chart-body chart-body-sm">
+          <canvas #barChart></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Dernières transactions -->
+    <div class="recent-card">
+      <div class="chart-title">🕐 Dernières transactions</div>
+      <table class="recent-table">
+        <thead>
+          <tr>
+            <th>#ID</th>
+            <th>Participant</th>
+            <th>Montant</th>
+            <th>Méthode</th>
+            <th>Statut</th>
+            <th>Date</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let p of payments.slice(0, 5)">
+            <td class="ref">{{ p.reference }}</td>
+            <td>{{ p.participantName || "N/A" }}</td>
+            <td>
+              <strong>{{ p.amount }} TND</strong>
+            </td>
+            <td>
+              <span *ngIf="p.paymentMethod === 'CREDIT_CARD'">💳 Card</span>
+              <span *ngIf="p.paymentMethod === 'BANK_TRANSFER'"
+                >🏦 Transfer</span
+              >
+              <span *ngIf="p.paymentMethod === 'CASH'">💵 Cash</span>
+              <span *ngIf="p.paymentMethod === 'ONLINE_PAYMENT'"
+                >🌐 Online</span
+              >
+            </td>
+            <td>
+              <span
+                class="badge"
+                [ngClass]="{
+                  'badge-paid': p.status === 'PAID',
+                  'badge-pending': p.status === 'PENDING',
+                  'badge-failed': p.status === 'FAILED',
+                  'badge-refunded': p.status === 'REFUNDED',
+                }"
+                >{{ p.status }}</span
+              >
+            </td>
+            <td class="date">{{ p.paymentDate | date: "dd/MM/yyyy HH:mm" }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+</div>

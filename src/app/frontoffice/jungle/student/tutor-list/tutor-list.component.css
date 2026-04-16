@@ -18,7 +18,7 @@
   align-items: center;
   gap: 8px;
   padding: 10px 20px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  background: linear-gradient(135deg,#3d7070 0%, #764ba2 100%);
   color: #fff;
   border: none;
   border-radius: 24px;
@@ -41,7 +41,7 @@
 .ai-panel-header { text-align: center; margin-bottom: 24px; }
 .ai-badge {
   display: inline-block;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #3d7070, #764ba2);
   color: #fff;
   font-size: 12px;
   font-weight: 600;
@@ -50,7 +50,7 @@
   margin-bottom: 10px;
 }
 .ai-panel-header h2 { font-size: 22px; font-weight: 700; color: #4c1d95; margin: 8px 0 6px; }
-.ai-panel-header p  { color: #6d28d9; margin: 0; font-size: 14px; }
+.ai-panel-header p  { color:#3d7070; margin: 0; font-size: 14px; }
 
 /* ── AI Form ── */
 .ai-form { display: flex; flex-direction: column; gap: 16px; }
@@ -82,7 +82,7 @@
   justify-content: center;
   gap: 8px;
   padding: 12px 24px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg,#3d7070, #764ba2);
   color: #fff;
   border: none;
   border-radius: 12px;
@@ -128,7 +128,7 @@
 .rec-avatar {
   width: 44px; height: 44px;
   border-radius: 50%;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #3d7070, #764ba2);
   color: #fff;
   font-weight: 700;
   font-size: 16px;
@@ -146,14 +146,14 @@
 .rec-tag {
   font-size: 11px;
   background: #ede9fe;
-  color: #6d28d9;
+  color: #3d7070;
   padding: 3px 10px;
   border-radius: 20px;
   font-weight: 500;
 }
 .btn-book-rec {
   padding: 8px 16px;
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg,#3d7070, #764ba2);
   color: #fff;
   border: none;
   border-radius: 8px;
@@ -178,7 +178,7 @@
   background: #fff;
   transition: border-color .2s;
 }
-.search-box input:focus, .sort-options select:focus { border-color: #667eea; }
+.search-box input:focus, .sort-options select:focus { border-color:#3d7070; }
 
 /* ── Tutor Grid ── */
 .loading p { text-align: center; color: #888; padding: 40px; }
@@ -196,13 +196,13 @@
 }
 .tutor-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,.1); }
 .tutor-card.ai-recommended {
-  border-color: #a78bfa;
+  border-color:#3d7070;
   box-shadow: 0 4px 16px rgba(124,58,237,.15);
 }
 
 /* AI badge on card */
 .ai-rec-badge {
-  background: linear-gradient(135deg, #667eea, #764ba2);
+  background: linear-gradient(135deg, #3d7070, #764ba2);
   color: #fff;
   font-size: 11px;
   font-weight: 600;
@@ -247,7 +247,7 @@
 .spec-tag {
   font-size: 11px;
   background: #f0f4ff;
-  color: #4361ee;
+  color: #3d7070;
   padding: 3px 10px;
   border-radius: 20px;
   font-weight: 500;
@@ -256,7 +256,7 @@
 /* AI reason snippet on card */
 .ai-snippet {
   font-size: 12px;
-  color: #6d28d9;
+  color: #3d7070;
   background: #f5f3ff;
   border-left: 3px solid #a78bfa;
   padding: 6px 10px;

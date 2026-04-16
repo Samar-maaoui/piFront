@@ -36,3 +36,35 @@ export interface RegisterRequest {
   hourlyRate?: number;
 }
 
+export interface UpdateProfileRequest {
+  firstName?: string;
+  lastName?: string;
+  email?: string;
+  level?: string;
+  learningGoals?: string;
+  bio?: string;
+  specialization?: string;
+  experienceYears?: number;
+  hourlyRate?: number;
+}
+
+export interface Tutor extends UserResponse {
+  
+  bio?: string;
+  specialization?: string[];
+  experienceYears?: number;
+  hourlyRate?: number;
+  rating?: number;
+  reviewCount?: number;
+  profileImage?: string;
+  languages?: string[];
+}
+
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  newPassword: string;
+}

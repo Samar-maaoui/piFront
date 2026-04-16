@@ -5,6 +5,7 @@ import { NgbModal, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { AvailabilityService } from './services/availability.service';
 import { PermissionService } from '../../../core/services/permission.service';
 import { Availability } from '../../../core/models/Availability';
+import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-availability',
@@ -18,7 +19,7 @@ export class AvailabilityComponent implements OnInit {
   availabilities: Availability[] = [];
   isLoading = false;
   editMode = false;
-  tutorId = 1;
+  tutorId!: number;
   selectedSlot: Availability | null = null; // ✅ ajout
 
   weekDays = ['MONDAY','TUESDAY','WEDNESDAY','THURSDAY','FRIDAY','SATURDAY','SUNDAY'];
@@ -33,10 +34,13 @@ export class AvailabilityComponent implements OnInit {
     private availabilityService: AvailabilityService,
     public perm: PermissionService,
     private modalService: NgbModal,
+    private authService: AuthService,
     @Inject(PLATFORM_ID) private platformId: Object
   ) {}
 
   ngOnInit(): void {
+    const user = this.authService.getCurrentUser();
+    this.tutorId = user?.id ?? 0;
     this.loadAvailabilities();
   }
 

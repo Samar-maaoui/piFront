@@ -36,12 +36,12 @@ export class SessionComponent implements OnInit {
   feedback = { rating: 0, comment: '' };
 
   tabs = [
-    { value: 'ALL',             label: 'All',             icon: '📋' },
-    { value: 'SCHEDULED',       label: 'Scheduled',       icon: '📅' },
-    { value: 'STARTED',         label: 'Started',         icon: '🔴' },
-    { value: 'FEEDBACK_PENDING', label: 'Feedback Pending', icon: '⏳' },
-    { value: 'CLOSED',          label: 'Closed',          icon: '✅' },
-    { value: 'MISSED',          label: 'Missed',          icon: '❌' },
+    { value: 'ALL',              label: 'All',             icon: '📋' },
+    { value: 'SCHEDULED',        label: 'Scheduled',       icon: '📅' },
+    { value: 'ONGOING',          label: 'Live',            icon: '🔴' },
+    { value: 'FEEDBACK_PENDING', label: 'Pending Review',  icon: '⏳' },
+    { value: 'DONE',             label: 'Done',            icon: '✅' },
+    { value: 'MISSED',           label: 'Missed',          icon: '❌' },
   ];
 
   constructor(
@@ -125,8 +125,9 @@ export class SessionComponent implements OnInit {
       alert('Please select a rating');
       return;
     }
+    const studentId = this.auth.getCurrentUser()?.id ?? 0;
     this.feedbackService.add(this.selectedSession.id!, {
-      studentId: 1,
+      studentId,
       rating: this.feedback.rating,
       comment: this.feedback.comment
     }).subscribe(() => {

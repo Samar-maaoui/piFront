@@ -1,0 +1,135 @@
+<div class="modal-overlay" (click)="closeModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    
+    <button class="modal-close" (click)="closeModal()">✕</button>
+
+    <!-- BOOKING BANNER -->
+    <div class="modal-event-banner">
+      <div>
+        <span class="modal-event-category">{{ booking.type }}</span>
+        <h3>Session avec {{ tutorName }}</h3>
+        <div class="modal-event-meta">
+          <span>🗓️ {{ booking.sessionDate }}</span>
+          <span>🕐 {{ booking.startTime }} → {{ booking.endTime }}</span>
+        </div>
+      </div>
+      <div class="modal-event-price">{{ sessionPrice }} TND</div>
+    </div>
+
+    <!-- ===== STEP PAYMENT ===== -->
+    <div *ngIf="step === 'payment'" class="modal-body">
+      <h4 class="modal-section-title">Paiement</h4>
+
+      <!-- Méthodes -->
+      <div class="payment-methods">
+        <div class="payment-method-btn" [class.active]="paymentMethod === 'CREDIT_CARD'"
+             (click)="paymentMethod = 'CREDIT_CARD'">
+          <span>💳</span><span>Carte</span>
+        </div>
+        <div class="payment-method-btn" [class.active]="paymentMethod === 'CASH'"
+             (click)="paymentMethod = 'CASH'">
+          <span>💵</span><span>Cash</span>
+        </div>
+        <div class="payment-method-btn" [class.active]="paymentMethod === 'BANK_TRANSFER'"
+             (click)="paymentMethod = 'BANK_TRANSFER'">
+          <span>🏦</span><span>Virement</span>
+        </div>
+      </div>
+
+      <!-- Promo -->
+      <div class="promo-code-section">
+        <div class="promo-code-row">
+          <input type="text" placeholder="Code promo" [(ngModel)]="promoCode" />
+          <button class="btn-apply" (click)="applyPromoCode()"
+                  [disabled]="promoLoading || !promoCode.trim()">
+            {{ promoLoading ? '...' : 'Appliquer' }}
+          </button>
+        </div>
+        <div class="promo-message" *ngIf="promoMessage">{{ promoMessage }}</div>
+      </div>
+
+      <!-- Stripe Card -->
+      <div *ngIf="paymentMethod === 'CREDIT_CARD'">
+        <div class="form-group">
+          <label>Numéro de carte</label>
+          <div id="stripe-card-number" class="stripe-element"></div>
+        </div>
+        <div class="form-group">
+          <label>Nom sur la carte</label>
+          <input type="text" [(ngModel)]="cardName" placeholder="JOHN DOE"
+                 style="text-transform:uppercase" />
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Expiration</label>
+            <div id="stripe-card-expiry" class="stripe-element"></div>
+          </div>
+          <div class="form-group">
+            <label>CVV</label>
+            <div id="stripe-card-cvc" class="stripe-element"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cash -->
+      <div class="other-payment" *ngIf="paymentMethod === 'CASH'">
+        <div class="other-icon">💵</div>
+        <p>Vous paierez en cash lors de la session.</p>
+      </div>
+
+      <!-- Virement -->
+      <div class="other-payment" *ngIf="paymentMethod === 'BANK_TRANSFER'">
+        <div class="other-icon">🏦</div>
+        <p>Les coordonnées bancaires seront envoyées par email.</p>
+        <input type="email" placeholder="votre@email.com" [(ngModel)]="bankEmail" />
+      </div>
+
+      <!-- Récap -->
+      <div class="payment-summary">
+        <div class="summary-row">
+          <span>Session</span>
+          <span>{{ booking.sessionDate }} • {{ booking.startTime }}</span>
+        </div>
+        <div class="summary-row">
+          <span>Type</span>
+          <span>{{ booking.type }}</span>
+        </div>
+        <div class="summary-row" *ngIf="promoValid && discountAmount > 0">
+          <span>Remise</span>
+          <span>-{{ discountAmount }} TND</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <span>{{ finalAmount }} TND</span>
+        </div>
+      </div>
+
+      <div class="payment-error" *ngIf="paymentError">⚠️ {{ paymentError }}</div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="closeModal()">Annuler</button>
+        <button class="btn-pay" (click)="confirmPayment()" [disabled]="paymentLoading">
+          <span *ngIf="!paymentLoading">🔒 Confirmer — {{ finalAmount }} TND</span>
+          <span *ngIf="paymentLoading">Traitement...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== STEP SUCCESS ===== -->
+    <div *ngIf="step === 'success'" class="modal-body success-body">
+      <div class="success-animation">🎉</div>
+      <h3>Réservation Confirmée !</h3>
+      <p>Session avec <strong>{{ tutorName }}</strong></p>
+      <div class="success-details">
+        <div class="success-row">
+          <span>📅</span><span>{{ booking.sessionDate }} • {{ booking.startTime }}</span>
+        </div>
+        <div class="success-row">
+          <span>💰</span><span>{{ finalAmount }} TND</span>
+        </div>
+      </div>
+      <button class="btn-primary" (click)="closeModal()">Fermer</button>
+    </div>
+
+  </div>
+</div>

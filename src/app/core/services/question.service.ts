@@ -1,10 +1,10 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Question, Answer } from '../../core/models/question';
+import { Question, Answer } from '../models/question';
 
-const QUESTION_API_URL = 'http://localhost:8081/api/questions';
-const ANSWER_API_URL   = 'http://localhost:8081/api/answers';
+const QUESTION_API_URL = 'http://localhost:8080/api/questions';
+const ANSWER_API_URL   = 'http://localhost:8080/api/answers';
 
 interface QuestionRequestBody {
   id?:         number;

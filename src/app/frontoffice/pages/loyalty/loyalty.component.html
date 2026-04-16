@@ -1,0 +1,137 @@
+<div class="loyalty-page">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="lp-loading">Loading your rewards...</div>
+
+  <!-- No account yet -->
+  <div *ngIf="!loading && !account" class="lp-empty">
+    <div class="lp-empty-icon">🎁</div>
+    <h3>No rewards yet</h3>
+    <p>Register for your first event to start earning loyalty points!</p>
+  </div>
+
+  <ng-container *ngIf="!loading && account">
+
+    <!-- ── Header ───────────────────────────────────────────────── -->
+    <div class="lp-header">
+      <h2>My Rewards</h2>
+      <p>Earn points with every event — unlock exclusive promo codes</p>
+    </div>
+
+    <!-- ── Loyalty Card ─────────────────────────────────────────── -->
+    <div class="lp-card" [ngClass]="'lp-' + account.tier.toLowerCase()">
+      <div class="lp-card-top">
+        <div class="lp-card-left">
+          <span class="lp-tier-icon">{{ tierIcon }}</span>
+          <div>
+            <div class="lp-tier-name">{{ account.tier }} Member</div>
+            <div class="lp-member-email">{{ account.participantEmail }}</div>
+          </div>
+        </div>
+        <div class="lp-events-badge">
+          <span class="lp-events-num">{{ account.totalPoints }}</span>
+          <span class="lp-events-lbl">events</span>
+        </div>
+      </div>
+
+      <div class="lp-progress-wrap">
+        <div class="lp-progress-bar">
+          <div class="lp-progress-fill" [style.width.%]="progressPercent"></div>
+        </div>
+        <span class="lp-progress-label">{{ nextTierLabel }}</span>
+      </div>
+
+      <div class="lp-milestones">
+        <div class="lp-milestone" [class.reached]="account.totalPoints >= 2">
+          <span class="lp-ms-dot"></span>
+          <span class="lp-ms-txt">2 events → 10% off</span>
+        </div>
+        <div class="lp-milestone" [class.reached]="account.totalPoints >= 4">
+          <span class="lp-ms-dot"></span>
+          <span class="lp-ms-txt">4 events → 30% off</span>
+        </div>
+        <div class="lp-milestone" [class.reached]="account.totalPoints >= 6">
+          <span class="lp-ms-dot"></span>
+          <span class="lp-ms-txt">6 events → 40% off</span>
+        </div>
+      </div>
+    </div>
+
+    <!-- ── Stats row ────────────────────────────────────────────── -->
+    <div class="lp-stats">
+      <div class="lp-stat">
+        <span class="lp-stat-icon">🎟️</span>
+        <span class="lp-stat-val">{{ codes.length }}</span>
+        <span class="lp-stat-lbl">Total codes</span>
+      </div>
+      <div class="lp-stat">
+        <span class="lp-stat-icon">✅</span>
+        <span class="lp-stat-val">{{ activeCodes.length }}</span>
+        <span class="lp-stat-lbl">Active</span>
+      </div>
+      <div class="lp-stat">
+        <span class="lp-stat-icon">💸</span>
+        <span class="lp-stat-val">{{ account.totalSpent | number:'1.0-0' }} TND</span>
+        <span class="lp-stat-lbl">Total spent</span>
+      </div>
+    </div>
+
+    <!-- ── Active codes ─────────────────────────────────────────── -->
+    <div class="lp-section" *ngIf="activeCodes.length > 0">
+      <h3 class="lp-section-title">🎁 Active Promo Codes</h3>
+      <div class="lp-codes-grid">
+        <div class="lp-code-card active" *ngFor="let c of activeCodes">
+          <div class="lp-code-discount">{{ c.value }}% OFF</div>
+          <div class="lp-code-value">
+            <span class="lp-code-text">{{ c.code }}</span>
+            <button class="lp-copy-btn" (click)="copyCode(c.code)">
+              {{ copiedCode === c.code ? '✅ Copied!' : '📋 Copy' }}
+            </button>
+          </div>
+          <div class="lp-code-meta">
+            <span>⏳ Expires {{ c.expirationDate | date:'dd/MM/yyyy' }}</span>
+            <span>Uses: {{ c.usesCount }}/{{ c.maxUses }}</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- No active codes -->
+    <div class="lp-section" *ngIf="activeCodes.length === 0 && codes.length === 0">
+      <div class="lp-no-codes">
+        <span>🎯</span>
+        <p>Attend <strong>{{ 2 - account.totalPoints > 0 ? 2 - account.totalPoints : 0 }}</strong> more event(s) to unlock your first promo code!</p>
+      </div>
+    </div>
+
+    <!-- ── Used / Expired codes ──────────────────────────────────── -->
+    <div class="lp-section" *ngIf="usedCodes.length > 0 || expiredCodes.length > 0">
+      <h3 class="lp-section-title">📜 History</h3>
+      <table class="lp-history-table">
+        <thead>
+          <tr>
+            <th>Code</th>
+            <th>Discount</th>
+            <th>Expiry</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let c of usedCodes">
+            <td class="lp-code-mono">{{ c.code }}</td>
+            <td>{{ c.value }}%</td>
+            <td>{{ c.expirationDate | date:'dd/MM/yyyy' }}</td>
+            <td><span class="lp-badge used">Used</span></td>
+          </tr>
+          <tr *ngFor="let c of expiredCodes">
+            <td class="lp-code-mono">{{ c.code }}</td>
+            <td>{{ c.value }}%</td>
+            <td>{{ c.expirationDate | date:'dd/MM/yyyy' }}</td>
+            <td><span class="lp-badge expired">Expired</span></td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </ng-container>
+</div>

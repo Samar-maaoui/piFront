@@ -66,7 +66,7 @@
       <div class="ai-error" *ngIf="aiError">{{ aiError }}</div>
 
       <button class="btn-get-recs" (click)="getRecommendations()" [disabled]="aiLoading">
-        <ng-container *ngIf="!aiLoading">✨ Get my recommendations</ng-container>
+        <ng-container *ngIf="!aiLoading">Get my recommendations</ng-container>
         <ng-container *ngIf="aiLoading">
           <span class="pulse-dot"></span> Analysing...
         </ng-container>
@@ -150,7 +150,7 @@
           <h3>{{ tutor.firstName }} {{ tutor.lastName }}</h3>
           <div class="rating">
             <span>⭐</span>
-            <span class="rating-value">{{ tutor.rating }}</span>
+            <span class="rating-value">{{ tutor.hourlyRate }}</span>
             <span class="review-count">({{ tutor.reviewCount }})</span>
           </div>
         </div>
@@ -158,7 +158,7 @@
         <p class="bio">{{ tutor.bio }}</p>
 
         <div class="specializations">
-          <span *ngFor="let spec of tutor.specialization.slice(0, 3)" class="spec-tag">{{ spec }}</span>
+          <span *ngFor="let spec of (tutor.specialization ?? []).slice(0, 3)" class="spec-tag">{{ spec }}</span>
         </div>
 
         <p class="ai-snippet" *ngIf="isRecommended(tutor.id)">
@@ -167,8 +167,8 @@
 
         <div class="tutor-stats">
           <div class="stat"><span>🎓</span><span>{{ tutor.experienceYears }} yrs</span></div>
-          <div class="stat"><span>💰</span><span>{{ tutor.hourlyRate }} DT/h</span></div>
-          <div class="stat"><span>🌐</span><span>{{ tutor.languages.join(', ') }}</span></div>
+          <div class="stat"><span>💰</span><span>{{ tutor.hourlyRate ?? 0 }} DT/h</span></div>
+          <div class="stat"><span>🌐</span><span>{{ tutor.languages?.join(', ') }}</span></div>
         </div>
 
         <div class="availability">

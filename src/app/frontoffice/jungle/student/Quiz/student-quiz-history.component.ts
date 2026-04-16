@@ -20,7 +20,7 @@ export class StudentQuizHistoryComponent implements OnInit {
   loading         = true;
   currentUserId: number | null = null;
 
-  private api = 'http://localhost:8081/api';
+  private api = 'http://localhost:8080/api';
 
   constructor(
     private http: HttpClient,

@@ -6,6 +6,9 @@
       <div class="hero-badge">My Bookings</div>
       <h1 class="hero-title">Session Tracker</h1>
       <p class="hero-subtitle">Manage your booking requests and upcoming sessions</p>
+      <a routerLink="/student/booking-dashboard" class="btn-booking-dashboard">
+         My Booking Dashboard
+      </a>
     </div>
     <div class="hero-stats">
       <div class="hero-stat">
@@ -31,7 +34,7 @@
 
   <!-- Error Banner -->
   <div class="error-banner" *ngIf="errorMessage">
-    <span>⚠️ {{ errorMessage }}</span>
+    <span> {{ errorMessage }}</span>
     <button (click)="errorMessage = ''">×</button>
   </div>
 

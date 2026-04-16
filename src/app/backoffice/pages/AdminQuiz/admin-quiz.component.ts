@@ -36,7 +36,7 @@ export class AdminQuizComponent implements OnInit {
   levels = ['A1', 'A2', 'B1', 'B2', 'C1', 'C2'];
   tutorsMap: Map<number, string> = new Map();
 
-  private api = 'http://localhost:8081/api';
+  private api = 'http://localhost:8080/api';
 
   constructor(
     private quizService: QuizService,

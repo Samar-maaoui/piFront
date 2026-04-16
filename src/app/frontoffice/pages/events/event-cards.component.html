@@ -1,0 +1,727 @@
+<div class="events-page">
+  <div class="user-stats-banner" *ngIf="!loading">
+    <!-- TOP : texte + card espace -->
+    <div class="banner-top">
+      <div class="welcome-text">
+        <h1>Explorez, Apprenez, Évoluez 🚀</h1>
+        <p>
+          Découvrez des événements passionnants et suivez votre progression en
+          temps réel.
+        </p>
+      </div>
+
+      <div class="stats-shortcut-card" routerLink="/stats-events">
+        <div class="card-glass-effect"></div>
+        <div class="card-content">
+          <div class="user-brief">
+            <div class="mini-avatar">✨</div>
+            <span>Mon Espace Personnel</span>
+          </div>
+          <div class="mini-stats">
+            <div class="stat-item">
+              <span class="stat-val">Mes Activités</span>
+              <span class="stat-icon">📊</span>
+            </div>
+          </div>
+          <button class="btn-discover">
+            Voir mon Dashboard <span class="arrow">→</span>
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- BOTTOM : loyalty bar -->
+    <div class="banner-loyalty-bar" routerLink="/loyalty">
+      <span class="blb-icon">
+        {{
+          loyaltyTier === "GOLD" ? "🏆" : loyaltyTier === "SILVER" ? "🥈" : "🥉"
+        }}
+      </span>
+      <div class="blb-info">
+        <div class="blb-top">
+          <span class="blb-tier">{{ loyaltyTier || "BRONZE" }} Member</span>
+          <span class="blb-next">
+            {{
+              loyaltyTier === "GOLD"
+                ? "Max tier reached!"
+                : loyaltyTier === "SILVER"
+                  ? 6 - loyaltyPoints + " events to GOLD"
+                  : 3 - loyaltyPoints + " events to SILVER"
+            }}
+          </span>
+        </div>
+        <div class="blb-bar">
+          <div
+            class="blb-fill"
+            [style.width.%]="
+              loyaltyTier === 'GOLD'
+                ? 100
+                : loyaltyTier === 'SILVER'
+                  ? ((loyaltyPoints - 3) / 3) * 100
+                  : (loyaltyPoints / 3) * 100
+            "
+          ></div>
+        </div>
+      </div>
+      <div class="blb-right">
+        <span class="blb-pts">{{ loyaltyPoints }}</span>
+        <span class="blb-lbl">events · My Rewards →</span>
+      </div>
+    </div>
+
+    <div class="blob shape-1"></div>
+    <div class="blob shape-2"></div>
+  </div>
+
+  <div class="events-header">
+    <h2>📅 Available Events</h2>
+    <p>Join our events and develop your skills</p>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Loading events...</p>
+  </div>
+
+  <div *ngIf="error" class="error-state">⚠️ {{ error }}</div>
+
+  <!-- ✅ SEARCH & FILTERS — à l'intérieur de *ngIf="!loading" -->
+  <div *ngIf="!loading">
+    <!-- ===== SEARCH & FILTERS ===== -->
+    <div class="search-section">
+      <div class="search-bar">
+        <span class="search-icon">🔍</span>
+        <input
+          type="text"
+          placeholder="Search events by title, location, category..."
+          [(ngModel)]="searchQuery"
+          (input)="onSearchInput()"
+          class="search-input"
+        />
+        <button
+          class="search-clear"
+          *ngIf="searchQuery"
+          (click)="searchQuery = ''; applyFilters()"
+        >
+          ✕
+        </button>
+      </div>
+
+      <div class="filters-row">
+        <div class="filter-group">
+          <label>Type</label>
+          <select [(ngModel)]="filterType" (change)="applyFilters()">
+            <option value="">All types</option>
+            <option value="En Ligne">🌐 Online</option>
+            <option value="Présentiel">📍 In-person</option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>Category</label>
+          <select [(ngModel)]="filterCategory" (change)="applyFilters()">
+            <option value="">All categories</option>
+            <option *ngFor="let cat of categories" [value]="cat">
+              {{ cat }}
+            </option>
+          </select>
+        </div>
+
+        <div class="filter-group">
+          <label>From</label>
+          <input
+            type="date"
+            [(ngModel)]="filterDateFrom"
+            (change)="applyFilters()"
+          />
+        </div>
+
+        <div class="filter-group">
+          <label>To</label>
+          <input
+            type="date"
+            [(ngModel)]="filterDateTo"
+            (change)="applyFilters()"
+          />
+        </div>
+
+        <button
+          class="btn-reset"
+          *ngIf="hasActiveFilters"
+          (click)="resetFilters()"
+        >
+          🔄 Reset
+        </button>
+      </div>
+
+      <div class="results-count">
+        <span *ngIf="hasActiveFilters">
+          {{ filteredEvents.length }} result(s) found
+        </span>
+      </div>
+    </div>
+
+    <!-- ===== EVENTS GRID ===== -->
+    <div class="events-grid">
+      <div class="event-card" *ngFor="let event of filteredEvents">
+        <!-- ✅ filteredEvents -->
+        <div class="event-media">
+          <img
+            *ngIf="
+              event.mediaFileName &&
+              (event.mediaFileName.endsWith('.jpg') ||
+                event.mediaFileName.endsWith('.png'))
+            "
+            [src]="'http://localhost:8090/uploads/' + event.mediaFileName"
+            alt="{{ event.title }}"
+          />
+          <div
+            class="event-media-placeholder"
+            *ngIf="
+              !event.mediaFileName ||
+              (!event.mediaFileName.endsWith('.jpg') &&
+                !event.mediaFileName.endsWith('.png'))
+            "
+          >
+            📅
+          </div>
+          <span class="event-badge">{{ event.category }}</span>
+        </div>
+
+        <div class="event-body">
+          <h3>{{ event.title }}</h3>
+          <p class="event-description">{{ event.description }}</p>
+          <div class="event-meta">
+            <!-- ✅ Lieu + bouton Google Maps -->
+            <span *ngIf="event.format !== 'En Ligne'">
+              🏢 {{ event.location }}
+              <a
+                *ngIf="event.latitude && event.longitude"
+                [href]="
+                  'https://www.google.com/maps?q=' +
+                  event.latitude +
+                  ',' +
+                  event.longitude
+                "
+                target="_blank"
+                rel="noopener noreferrer"
+                style="
+                  margin-left: 6px;
+                  font-size: 12px;
+                  color: #4a90e2;
+                  text-decoration: none;
+                  white-space: nowrap;
+                "
+              >
+                🗺️ Maps
+              </a>
+            </span>
+
+            <span>{{
+              event.format === "En Ligne" ? "🌐 Online" : "📍 In-person"
+            }}</span>
+            <span>👥 {{ event.maxParticipants }} available places</span>
+            <span>🗓️ {{ event.startDate }}</span>
+          </div>
+
+          <div class="event-footer">
+            <span class="event-price">{{ event.price }} TND</span>
+            <button class="btn-participate" (click)="openSessions(event)">
+              Join →
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div *ngIf="filteredEvents.length === 0" class="empty-state">
+        <!-- ✅ filteredEvents -->
+        <p>📭 No events found</p>
+      </div>
+    </div>
+  </div>
+  <!-- ✅ fin *ngIf="!loading" -->
+</div>
+<!-- ===== MODAL POPUP ===== -->
+<div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+  <div class="modal-box" (click)="$event.stopPropagation()">
+    <!-- STEPS -->
+    <div class="modal-steps">
+      <div
+        class="modal-step-dot"
+        [class.active]="step === 'sessions'"
+        [class.done]="step === 'payment' || step === 'success'"
+      >
+        <span>1</span><label>Sessions</label>
+      </div>
+      <div
+        class="modal-step-line"
+        [class.done]="step === 'payment' || step === 'success'"
+      ></div>
+      <div
+        class="modal-step-dot"
+        [class.active]="step === 'payment'"
+        [class.done]="step === 'success'"
+      >
+        <span>2</span><label>Payment</label>
+      </div>
+      <div class="modal-step-line" [class.done]="step === 'success'"></div>
+      <div class="modal-step-dot" [class.active]="step === 'success'">
+        <span>3</span><label>Confirmation</label>
+      </div>
+    </div>
+
+    <!-- EVENT BANNER -->
+    <div class="modal-event-banner" *ngIf="selectedEvent">
+      <div>
+        <span class="modal-event-category">{{ selectedEvent.category }}</span>
+        <h3>{{ selectedEvent.title }}</h3>
+        <div class="modal-event-meta">
+          <span>📍 {{ selectedEvent.location }}</span>
+          <span>🗓️ {{ selectedEvent.startDate }}</span>
+        </div>
+      </div>
+      <div class="modal-event-price">{{ selectedEvent.price }} TND</div>
+    </div>
+
+    <!-- CLOSE -->
+    <button class="modal-close" (click)="closeModal()">✕</button>
+
+    <!-- ===== STEP 1 : SESSIONS ===== -->
+    <div *ngIf="step === 'sessions'" class="modal-body">
+      <h4 class="modal-section-title">Choose your session</h4>
+
+      <div *ngIf="sessionsLoading" class="loading-state">
+        <div class="spinner"></div>
+        <p>Loading sessions...</p>
+      </div>
+
+      <div
+        *ngIf="!sessionsLoading && sessions.length === 0"
+        class="empty-state"
+      >
+        😕 No sessions available for this event
+      </div>
+
+      <div
+        class="sessions-list"
+        *ngIf="!sessionsLoading && sessions.length > 0"
+      >
+        <div
+          class="session-card"
+          *ngFor="let session of sessions"
+          [class.selected]="selectedSession?.id === session.id"
+          (click)="selectSession(session)"
+        >
+          <div class="session-card-header">
+            <span class="session-type-badge">{{
+              getSessionTypeLabel(session.type)
+            }}</span>
+            <span
+              class="session-check"
+              *ngIf="selectedSession?.id === session.id"
+              >✓</span
+            >
+          </div>
+          <div class="session-date-day">{{ session.date }}</div>
+          <div class="session-date-time">
+            {{ session.startTime }} → {{ session.endTime }}
+          </div>
+          <div class="session-details">
+            <span *ngIf="session.room">🏢 {{ session.room }}</span>
+            <span *ngIf="session.availableSeats" class="seats-warning">
+              💺 {{ session.availableSeats }} spots left
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer" *ngIf="!sessionsLoading && sessions.length > 0">
+        <button class="btn-cancel" (click)="closeModal()">Cancel</button>
+        <button
+          class="btn-primary"
+          [disabled]="!selectedSession"
+          (click)="goToPayment()"
+        >
+          Continue →
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== STEP 2 : PAYMENT ===== -->
+    <div *ngIf="step === 'payment'" class="modal-body">
+      <h4 class="modal-section-title">Payment</h4>
+
+      <!-- 3 méthodes fixes -->
+      <div class="payment-methods">
+        <div
+          class="payment-method-btn"
+          [class.active]="paymentMethod === 'CREDIT_CARD'"
+          (click)="paymentMethod = 'CREDIT_CARD'"
+        >
+          <span>💳</span>
+          <span>Credit Card</span>
+        </div>
+        <div
+          class="payment-method-btn"
+          [class.active]="paymentMethod === 'CASH'"
+          (click)="paymentMethod = 'CASH'"
+        >
+          <span>💵</span>
+          <span>Cash</span>
+        </div>
+        <div
+          class="payment-method-btn"
+          [class.active]="paymentMethod === 'BANK_TRANSFER'"
+          (click)="paymentMethod = 'BANK_TRANSFER'"
+        >
+          <span>🏦</span>
+          <span>Bank Transfer</span>
+        </div>
+      </div>
+
+      <div class="promo-code-section">
+        <div class="promo-code-row">
+          <input type="text" placeholder="Code promo" [(ngModel)]="promoCode" />
+          <button
+            class="btn-apply"
+            (click)="applyPromoCode()"
+            [disabled]="promoLoading || !promoCode.trim()"
+          >
+            {{ promoLoading ? "Application..." : "Appliquer" }}
+          </button>
+        </div>
+        <div class="promo-message" *ngIf="promoMessage">
+          {{ promoMessage }}
+        </div>
+      </div>
+
+      <!-- Credit Card Form -->
+      <div *ngIf="paymentMethod === 'CREDIT_CARD'">
+        <!-- ✅ Card Preview — design original conservé -->
+        <div class="card-preview">
+          <div class="card-preview-number">
+            {{ cardNumberDisplay || "•••• •••• •••• ••••" }}
+          </div>
+          <div class="card-preview-bottom">
+            <span>{{ cardName || "YOUR NAME" }}</span>
+            <span>{{ cardExpiryDisplay || "MM/YY" }}</span>
+          </div>
+        </div>
+
+        <!-- ✅ CARD NUMBER — Stripe Element injecté dans ce div -->
+        <div class="form-group">
+          <label>Card Number</label>
+          <div class="card-input-wrapper">
+            <!-- Stripe monte son iframe ici — même style que votre input -->
+            <div
+              id="stripe-card-number"
+              class="card-number-input stripe-element"
+            ></div>
+
+            <!-- ✅ Icônes SVG conservées — mises à jour via cardType -->
+            <div class="card-icon-container">
+              <!-- VISA -->
+              <svg
+                *ngIf="cardType === 'visa'"
+                class="card-icon"
+                viewBox="0 0 48 32"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect width="48" height="32" rx="4" fill="#1A1F71" />
+                <text
+                  x="24"
+                  y="21"
+                  text-anchor="middle"
+                  font-family="Arial,sans-serif"
+                  font-size="13"
+                  font-weight="bold"
+                  font-style="italic"
+                  fill="white"
+                  letter-spacing="1"
+                >
+                  VISA
+                </text>
+              </svg>
+              <!-- MASTERCARD -->
+              <svg
+                *ngIf="cardType === 'mastercard'"
+                class="card-icon"
+                viewBox="0 0 48 32"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect width="48" height="32" rx="4" fill="#252525" />
+                <circle cx="18" cy="16" r="10" fill="#EB001B" />
+                <circle cx="30" cy="16" r="10" fill="#F79E1B" />
+                <path
+                  d="M24 8.3a10 10 0 0 1 0 15.4A10 10 0 0 1 24 8.3z"
+                  fill="#FF5F00"
+                />
+              </svg>
+              <!-- AMEX -->
+              <svg
+                *ngIf="cardType === 'amex'"
+                class="card-icon"
+                viewBox="0 0 48 32"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect width="48" height="32" rx="4" fill="#2557D6" />
+                <text
+                  x="24"
+                  y="14"
+                  text-anchor="middle"
+                  font-family="Arial,sans-serif"
+                  font-size="6"
+                  font-weight="bold"
+                  fill="white"
+                >
+                  AMERICAN
+                </text>
+                <text
+                  x="24"
+                  y="22"
+                  text-anchor="middle"
+                  font-family="Arial,sans-serif"
+                  font-size="6"
+                  font-weight="bold"
+                  fill="white"
+                >
+                  EXPRESS
+                </text>
+              </svg>
+              <!-- DISCOVER -->
+              <svg
+                *ngIf="cardType === 'discover'"
+                class="card-icon"
+                viewBox="0 0 48 32"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect
+                  width="48"
+                  height="32"
+                  rx="4"
+                  fill="#FFFFFF"
+                  stroke="#e0e0e0"
+                  stroke-width="1"
+                />
+                <text
+                  x="10"
+                  y="20"
+                  font-family="Arial,sans-serif"
+                  font-size="7"
+                  font-weight="bold"
+                  fill="#231F20"
+                >
+                  DISCOVER
+                </text>
+                <circle cx="36" cy="16" r="9" fill="#F76F20" />
+              </svg>
+              <!-- UNKNOWN -->
+              <svg
+                *ngIf="cardType === 'unknown'"
+                class="card-icon"
+                viewBox="0 0 48 32"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <rect width="48" height="32" rx="4" fill="#e0e0e0" />
+                <rect x="6" y="10" width="36" height="5" rx="1" fill="#bbb" />
+                <rect x="6" y="20" width="14" height="4" rx="1" fill="#bbb" />
+                <rect x="24" y="20" width="8" height="4" rx="1" fill="#bbb" />
+              </svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- ✅ Cardholder Name — votre input original -->
+        <div class="form-group">
+          <label>Cardholder Name</label>
+          <input
+            type="text"
+            placeholder="JOHN DOE"
+            [(ngModel)]="cardName"
+            style="text-transform: uppercase"
+          />
+        </div>
+
+        <!-- ✅ Expiry + CVV — Stripe Elements dans vos divs stylés -->
+        <div class="form-row">
+          <div class="form-group">
+            <label>Expiry Date</label>
+            <!-- Stripe monte son iframe ici -->
+            <div id="stripe-card-expiry" class="stripe-element"></div>
+          </div>
+          <div class="form-group">
+            <label>CVV</label>
+            <!-- Stripe monte son iframe ici -->
+            <div id="stripe-card-cvc" class="stripe-element"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Cash -->
+      <div class="other-payment" *ngIf="paymentMethod === 'CASH'">
+        <div class="other-icon">💵</div>
+        <p>You will pay in cash at the session.</p>
+      </div>
+
+      <!-- Bank Transfer -->
+      <div class="other-payment" *ngIf="paymentMethod === 'BANK_TRANSFER'">
+        <div class="other-icon">🏦</div>
+        <p>Bank details will be sent to your email.</p>
+        <!-- ✅ Champ email -->
+        <div class="form-group" style="margin-top: 16px; text-align: left">
+          <label>Your Email Address</label>
+          <input
+            type="email"
+            placeholder="example@email.com"
+            [(ngModel)]="bankEmail"
+            style="
+              width: 100%;
+              padding: 12px 14px;
+              border: 2px solid #f0f0f0;
+              border-radius: 10px;
+              font-size: 14px;
+              outline: none;
+              box-sizing: border-box;
+            "
+          />
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="payment-summary">
+        <div class="summary-row">
+          <span>Session</span>
+          <span
+            >{{ selectedSession?.date }} •
+            {{ selectedSession?.startTime }}</span
+          >
+        </div>
+        <div class="summary-row">
+          <span>Type</span>
+          <span>{{ getSessionTypeLabel(selectedSession?.type || "") }}</span>
+        </div>
+        <div class="summary-row" *ngIf="promoValid && discountAmount > 0">
+          <span>Remise</span>
+          <span>-{{ discountAmount }} TND</span>
+        </div>
+        <div class="summary-row total">
+          <span>Total</span>
+          <span>{{ finalAmount || selectedEvent?.price }} TND</span>
+        </div>
+      </div>
+
+      <div class="payment-error" *ngIf="paymentError">
+        ⚠️ {{ paymentError }}
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn-cancel" (click)="goBackToSessions()">← Back</button>
+        <button
+          class="btn-pay"
+          (click)="confirmPayment()"
+          [disabled]="paymentLoading"
+        >
+          <span *ngIf="!paymentLoading"
+            >🔒 Confirm — {{ finalAmount || selectedEvent?.price }} TND</span
+          >
+          <span *ngIf="paymentLoading">Processing...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- ===== STEP 3 : SUCCESS ===== -->
+    <div *ngIf="step === 'success'" class="modal-body success-body">
+      <div class="success-animation">🎉</div>
+      <h3>Registration Confirmed!</h3>
+      <p>
+        You are registered for <strong>{{ selectedEvent?.title }}</strong>
+      </p>
+      <div class="success-details">
+        <div class="success-row">
+          <span>📅</span>
+          <span
+            >{{ selectedSession?.date }} •
+            {{ selectedSession?.startTime }}</span
+          >
+        </div>
+        <div class="success-row">
+          <span>📍</span>
+          <span>{{ getSessionTypeLabel(selectedSession?.type || "") }}</span>
+        </div>
+        <div class="success-row">
+          <span>💰</span>
+          <span>{{ finalAmount || selectedEvent?.price }} TND</span>
+        </div>
+      </div>
+
+      <!-- ── Carte de fidélité ─────────────────────────────── -->
+      <div
+        *ngIf="loyaltyTier"
+        class="loyalty-card"
+        [ngClass]="'loyalty-' + loyaltyTier.toLowerCase()"
+      >
+        <div class="loyalty-header">
+          <span class="loyalty-icon">
+            {{
+              loyaltyTier === "GOLD"
+                ? "🏆"
+                : loyaltyTier === "SILVER"
+                  ? "🥈"
+                  : "🥉"
+            }}
+          </span>
+          <span class="loyalty-tier">{{ loyaltyTier }} Member</span>
+        </div>
+        <div class="loyalty-body">
+          <div class="loyalty-points">
+            <span class="loyalty-points-value">{{ loyaltyPoints }}</span>
+            <span class="loyalty-points-label">events attended</span>
+          </div>
+          <div class="loyalty-progress-bar">
+            <div
+              class="loyalty-progress-fill"
+              [style.width.%]="
+                loyaltyTier === 'GOLD'
+                  ? 100
+                  : loyaltyTier === 'SILVER'
+                    ? ((loyaltyPoints - 3) / 3) * 100
+                    : (loyaltyPoints / 3) * 100
+              "
+            ></div>
+          </div>
+          <p class="loyalty-next" *ngIf="loyaltyTier !== 'GOLD'">
+            {{
+              loyaltyTier === "SILVER"
+                ? 6 - loyaltyPoints + " events until GOLD"
+                : 3 - loyaltyPoints + " events until SILVER"
+            }}
+          </p>
+          <p class="loyalty-next" *ngIf="loyaltyTier === 'GOLD'">
+            Maximum tier reached!
+          </p>
+        </div>
+
+        <!-- Nouveau code promo débloqué -->
+        <div *ngIf="loyaltyNewCode" class="loyalty-reward">
+          <p>🎁 You unlocked a reward!</p>
+          <p class="loyalty-reward-hint">
+            Check your promo codes — a new
+            <strong>
+              {{
+                loyaltyNewCode === "FIDEL6"
+                  ? "40%"
+                  : loyaltyNewCode === "FIDEL4"
+                    ? "30%"
+                    : "10%"
+              }}
+            </strong>
+            discount code is waiting for you.
+          </p>
+        </div>
+      </div>
+      <!-- ─────────────────────────────────────────────────── -->
+
+      <button class="btn-primary" (click)="closeModal()">Close</button>
+    </div>
+  </div>
+</div>

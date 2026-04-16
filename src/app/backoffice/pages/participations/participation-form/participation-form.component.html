@@ -1,0 +1,221 @@
+<div class="page-wrapper">
+  <div class="form-inner">
+    <div class="page-header">
+      <h2 class="page-title">{{ isEdit ? " Edit" : " Add" }} Participation</h2>
+      <a routerLink="/admin/participations" class="btn-back">← Back</a>
+    </div>
+
+    <div *ngIf="submitError" class="alert-error">⚠️ {{ submitError }}</div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="form-card">
+      <!-- ── SECTION 1 : Registration ── -->
+      <div class="form-section">
+        <div class="section-title">📋 Registration Details</div>
+        <div class="field-row">
+          <div class="field-col">
+            <label class="field-label"
+              >Registration Date <span class="required">*</span></label
+            >
+            <input
+              type="date"
+              formControlName="registrationDate"
+              class="field-input"
+              [class.invalid]="
+                f['registrationDate'].invalid && f['registrationDate'].touched
+              "
+            />
+            <div
+              class="field-error"
+              *ngIf="
+                f['registrationDate'].invalid && f['registrationDate'].touched
+              "
+            >
+              ⚠ Date is required
+            </div>
+          </div>
+          <div class="field-col">
+            <label class="field-label"
+              >Status <span class="required">*</span></label
+            >
+            <select
+              formControlName="status"
+              class="field-select"
+              [class.invalid]="f['status'].invalid && f['status'].touched"
+            >
+              <option value="" disabled>Select a status</option>
+              <option *ngFor="let option of statusOptions" [value]="option">
+                {{ option }}
+              </option>
+            </select>
+            <div
+              class="field-error"
+              *ngIf="f['status'].invalid && f['status'].touched"
+            >
+              ⚠ Status is required
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECTION 2 : Payment ── -->
+      <div class="form-section">
+        <div class="section-title">💳 Payment Information</div>
+        <div class="field-row">
+          <div class="field-col">
+            <label class="field-label">Amount Paid (TND)</label>
+            <input
+              type="number"
+              formControlName="amountPaid"
+              class="field-input"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+              [class.invalid]="
+                f['amountPaid'].invalid && f['amountPaid'].touched
+              "
+            />
+            <div
+              class="field-error"
+              *ngIf="f['amountPaid'].invalid && f['amountPaid'].touched"
+            >
+              ⚠ Invalid amount
+            </div>
+          </div>
+          <div class="field-col">
+            <label class="field-label"
+              >Payment Method <span class="required">*</span></label
+            >
+            <select
+              formControlName="paymentMethod"
+              class="field-select"
+              [class.invalid]="
+                f['paymentMethod'].invalid && f['paymentMethod'].touched
+              "
+            >
+              <option value="" disabled>Select a method</option>
+              <option
+                *ngFor="let option of paymentMethodOptions"
+                [value]="option"
+              >
+                {{ option }}
+              </option>
+            </select>
+            <div
+              class="field-error"
+              *ngIf="f['paymentMethod'].invalid && f['paymentMethod'].touched"
+            >
+              ⚠ Payment method is required
+            </div>
+          </div>
+        </div>
+        <div class="field-group">
+          <label class="field-label"
+            >Payment Status <span class="required">*</span></label
+          >
+          <select
+            formControlName="paymentStatus"
+            class="field-select"
+            [class.invalid]="
+              f['paymentStatus'].invalid && f['paymentStatus'].touched
+            "
+          >
+            <option value="" disabled>Select a status</option>
+            <option
+              *ngFor="let option of paymentStatusOptions"
+              [value]="option"
+            >
+              {{ option }}
+            </option>
+          </select>
+          <div
+            class="field-error"
+            *ngIf="f['paymentStatus'].invalid && f['paymentStatus'].touched"
+          >
+            ⚠ Payment status is required
+          </div>
+        </div>
+      </div>
+
+      <!-- ── SECTION 3 : Linked Entities ── -->
+      <div class="form-section">
+        <div class="section-title">🔗 Linked Entities</div>
+
+        <div class="field-row">
+          <!-- USER ID : simple input (inchangé) -->
+          <div class="field-col">
+            <label class="field-label"
+              >User ID <span class="required">*</span></label
+            >
+            <input
+              type="number"
+              formControlName="userId"
+              class="field-input"
+              placeholder="Ex: 42"
+              [class.invalid]="f['userId'].invalid && f['userId'].touched"
+            />
+            <div
+              class="field-error"
+              *ngIf="f['userId'].invalid && f['userId'].touched"
+            >
+              ⚠ User is required
+            </div>
+          </div>
+
+          <!-- SESSION : dropdown (create) / readonly (edit) -->
+          <div class="field-col">
+            <label class="field-label"
+              >Session <span class="required">*</span></label
+            >
+
+            <!-- CREATE -->
+            <ng-container *ngIf="!isEdit">
+              <div *ngIf="sessionsLoading" class="map-hint">
+                <span class="spin-sm"></span> Loading sessions...
+              </div>
+              <select
+                formControlName="sessionId"
+                class="field-select"
+                [class.invalid]="
+                  f['sessionId'].invalid && f['sessionId'].touched
+                "
+              >
+                <option [ngValue]="null" disabled>
+                  -- Select a session --
+                </option>
+                <option *ngFor="let s of sessions" [ngValue]="s.id">
+                  {{ getSessionLabel(s) }}
+                </option>
+              </select>
+              <div
+                class="field-error"
+                *ngIf="f['sessionId'].invalid && f['sessionId'].touched"
+              >
+                ⚠ Session is required
+              </div>
+            </ng-container>
+
+            <!-- EDIT : readonly -->
+            <div *ngIf="isEdit" class="entity-readonly">
+              🔒
+              <span *ngIf="linkedSessionLabel; else loadingSession">
+                <strong>{{ linkedSessionLabel }}</strong>
+              </span>
+              <ng-template #loadingSession>
+                <span class="map-hint">Loading...</span>
+              </ng-template>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ── ACTIONS ── -->
+      <div class="form-actions">
+        <a routerLink="/admin/participations" class="btn-cancel">Cancel</a>
+        <button type="submit" class="btn-submit" [disabled]="loading">
+          <span class="spin-sm" *ngIf="loading"></span>
+          {{ isEdit ? " Save updates" : " Add Participation" }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

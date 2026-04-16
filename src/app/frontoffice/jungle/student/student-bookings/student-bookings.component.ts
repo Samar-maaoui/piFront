@@ -44,7 +44,7 @@ export class StudentBookingsComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.studentId = 1; // hardcoded: all bookings are saved with studentId=1
+    this.studentId = this.authService.getCurrentUser()?.id ?? 1;
     this.loadBookings();
   }
 

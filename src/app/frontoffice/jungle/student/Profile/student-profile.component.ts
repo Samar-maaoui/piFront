@@ -33,7 +33,7 @@ export class StudentProfileComponent implements OnInit {
   // Badge animé récemment débloqué
   newBadge: any = null;
 
-  private api = 'http://localhost:8081/api';
+  private api = 'http://localhost:8080/api';
 
   constructor(
     private http: HttpClient,

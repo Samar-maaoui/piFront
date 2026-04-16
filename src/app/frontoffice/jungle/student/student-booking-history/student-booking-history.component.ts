@@ -2,9 +2,11 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
+import { forkJoin } from 'rxjs';
 import { BookingService } from '../../../../backoffice/pages/bookings-page/services/booking.service';
-import { BookingService as MainBookingService } from '../../../../backoffice/services/booking.service';
+import { BookingService as MainBookingService } from '../../../../core/services/booking.service';
 import { Booking } from '../../../../core/models/booking';
+import { AuthService } from '../../../../core/services/auth.service';
 
 @Component({
   selector: 'app-student-booking-history',
@@ -39,11 +41,10 @@ export class StudentBookingHistoryComponent implements OnInit {
   feedbackSuccess = false;
   errorMessage = '';
 
-  readonly STUDENT_ID = 1;
-
   constructor(
     private bookingService: BookingService,
-    private mainBookingService: MainBookingService
+    private mainBookingService: MainBookingService,
+    private authService: AuthService
   ) {}
 
   ngOnInit(): void {
@@ -53,10 +54,20 @@ export class StudentBookingHistoryComponent implements OnInit {
   loadHistory(): void {
     this.isLoading = true;
     this.errorMessage = '';
-    this.bookingService.getByStudent(this.STUDENT_ID).subscribe({
-      next: (data: Booking[]) => {
-        // Sort newest first
-        this.history = data.sort((a, b) =>
+    const studentId = this.authService.getCurrentUser()?.id ?? 0;
+
+    forkJoin({
+      bookings: this.bookingService.getByStudent(studentId),
+      sessions: this.mainBookingService.getStudentSessions(studentId)
+    }).subscribe({
+      next: ({ bookings, sessions }) => {
+        // Attach each session (and its feedback) to the matching booking
+        this.history = bookings.map(b => ({
+          ...b,
+          session: sessions.find(s =>
+            s.bookingId === b.id || s.booking?.id === b.id
+          )
+        })).sort((a, b) =>
           new Date(b.sessionDate).getTime() - new Date(a.sessionDate).getTime()
         );
         this.applyFilter();
@@ -140,9 +151,10 @@ export class StudentBookingHistoryComponent implements OnInit {
     if (!this.feedbackRating || !this.selectedBooking?.session?.id) return;
     this.isSubmitting = true;
 
+    const studentId = this.authService.getCurrentUser()?.id ?? 0;
     this.mainBookingService.submitFeedback(
       this.selectedBooking.session.id,
-      this.STUDENT_ID,
+      studentId,
       this.feedbackRating,
       this.feedbackComment
     ).subscribe({

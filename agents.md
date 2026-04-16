@@ -35,7 +35,7 @@
 
 **PiFront** is an **Angular 17+ SSR application** (Angular Universal) using **exclusively standalone components** (no `NgModule` anywhere).
 
-- **Backend API:** `http://localhost:8081/auth`
+- **Backend API:** `http://localhost:8080/auth`
 - **Rendering:** Server-Side Rendering via `server.ts` + `main.server.ts`
 - **Auth:** JWT token stored in `localStorage` (SSR-safe)
 - **Three user roles:** `STUDENT`, `TUTOR`, `ADMIN`
@@ -204,7 +204,7 @@ interface NavItem { label: string; route: string; icon?: string; }
 ### AuthService
 
 **File:** `core/services/auth.service.ts`  
-**API base:** `http://localhost:8081/auth`
+**API base:** `http://localhost:8080/auth`
 
 | Method | HTTP | Description |
 |---|---|---|
@@ -361,7 +361,7 @@ export const ADMIN_NAV: NavItem[] = [
 
 1. **Form** — `LoginComponent` builds a Reactive Form: `email` (required, email), `password` (required, min 6), `rememberMe` (checkbox, UI only).
 2. **Validation** — `submitted = true` on submit triggers all inline error messages. Invalid form stops here.
-3. **HTTP** — `authService.login({ email, password })` → `POST http://localhost:8081/auth/login`
+3. **HTTP** — `authService.login({ email, password })` → `POST http://localhost:8080/auth/login`
 4. **Storage** — On success, `tap()` in `AuthService` stores:
    - `localStorage["auth_token"]` = JWT string
    - `localStorage["auth_user"]` = JSON stringified `UserResponse`
@@ -400,7 +400,7 @@ User          LoginComponent        AuthService          Backend
 
 ## 9. Signup Workflow
 
-`SignupComponent` calls `authService.register()` → `POST http://localhost:8081/auth/register`.
+`SignupComponent` calls `authService.register()` → `POST http://localhost:8080/auth/register`.
 
 Role-specific fields in `RegisterRequest`:
 

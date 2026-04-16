@@ -1,0 +1,407 @@
+<div class="dash-root">
+  <!-- ── LOADING ──────────────────────────────────────────── -->
+  <div *ngIf="loading" class="dash-loading">
+    <div class="loader-ring"></div>
+    <p>Chargement du tableau de bord…</p>
+  </div>
+
+  <!-- ── ERROR ────────────────────────────────────────────── -->
+  <div *ngIf="error && !loading" class="dash-error">
+    <span>⚠️</span> {{ error }}
+    <button (click)="ngOnInit()">Réessayer</button>
+  </div>
+
+  <!-- ══════════════ MAIN CONTENT ════════════════════════════ -->
+  <ng-container *ngIf="!loading && !error">
+    <!-- ── HEADER ────────────────────────────────────────── -->
+    <header class="dash-header">
+      <div class="dash-header-left">
+        <div class="dash-header-badge">LIVE</div>
+        <div>
+          <h1 class="dash-title">Event Intelligence</h1>
+          <p class="dash-subtitle">Vue d'ensemble · Gestion des événements</p>
+        </div>
+      </div>
+      <nav class="dash-quick-nav">
+        <a routerLink="/admin/events" class="qnav-btn qnav-events">
+          <span class="qnav-icon">🎯</span>
+          <span>Événements</span>
+          <span class="qnav-count">{{ events.length }}</span>
+        </a>
+        <a routerLink="/admin/sessionevents" class="qnav-btn qnav-sessions">
+          <span class="qnav-icon">📅</span>
+          <span>Sessions</span>
+          <span class="qnav-count">{{ sessions.length }}</span>
+        </a>
+        <a routerLink="/admin/participations" class="qnav-btn qnav-parts">
+          <span class="qnav-icon">👥</span>
+          <span>Participations</span>
+          <span class="qnav-count">{{ participations.length }}</span>
+        </a>
+      </nav>
+    </header>
+
+    <!-- ── KPI CARDS ─────────────────────────────────────── -->
+    <section class="kpi-grid">
+      <div
+        class="kpi-card"
+        *ngFor="let k of kpis; let i = index"
+        [style.--accent]="k.color"
+        [style.animation-delay]="i * 0.08 + 's'"
+      >
+        <div class="kpi-icon">{{ k.icon }}</div>
+        <div class="kpi-body">
+          <div class="kpi-value">
+            {{ getAnimated(k.label) | number }}{{ k.suffix }}
+          </div>
+          <div class="kpi-label">{{ k.label }}</div>
+          <div class="kpi-sub">{{ k.sub }}</div>
+        </div>
+        <div class="kpi-bar">
+          <div
+            class="kpi-bar-fill"
+            [style.width]="'100%'"
+            [style.background]="k.color"
+          ></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── ALERTS ─────────────────────────────────────────── -->
+    <section class="alerts-band" *ngIf="alertSessions.length > 0">
+      <span class="alert-title">🔥 Sessions proches de la limite</span>
+      <div class="alerts-list">
+        <div class="alert-chip" *ngFor="let a of alertSessions">
+          <span>{{ getEventTitle(a.session.eventId) }}</span>
+          <span class="alert-date"
+            >· {{ a.session.date | date: "dd MMM" }}</span
+          >
+          <span class="alert-fill" [class.critical]="a.fillPercent >= 95"
+            >{{ a.fillPercent }}%</span
+          >
+        </div>
+      </div>
+    </section>
+
+    <!-- ══ ROW 1 : Courbes mensuelles + Statuts ═══════════════ -->
+    <div class="row-2col">
+      <!-- Monthly Bar Chart -->
+      <div class="card chart-card">
+        <div class="card-head">
+          <h2>
+            📈 Activité mensuelle
+            <span class="year-badge">{{ currentYear }}</span>
+          </h2>
+          <div class="chart-legend">
+            <span class="leg" style="--c: #00d4aa">Événements</span>
+            <span class="leg" style="--c: #7c6fff">Sessions</span>
+            <span class="leg" style="--c: #ff6b6b">Participants</span>
+          </div>
+        </div>
+        <div class="bar-chart">
+          <div class="bar-group" *ngFor="let m of monthStats">
+            <div class="bars">
+              <div class="bar-wrap" title="Événements: {{ m.events }}">
+                <div
+                  class="bar b-events"
+                  [style.height]="
+                    barPct(m.events, getMaxVal(monthStats, 'events')) * 0.9 +
+                    '%'
+                  "
+                ></div>
+              </div>
+              <div class="bar-wrap" title="Sessions: {{ m.sessions }}">
+                <div
+                  class="bar b-sessions"
+                  [style.height]="
+                    barPct(m.sessions, getMaxVal(monthStats, 'sessions')) *
+                      0.9 +
+                    '%'
+                  "
+                ></div>
+              </div>
+              <div
+                class="bar-wrap"
+                title="Participants: {{ m.participations }}"
+              >
+                <div
+                  class="bar b-parts"
+                  [style.height]="
+                    barPct(
+                      m.participations,
+                      getMaxVal(monthStats, 'participations')
+                    ) *
+                      0.9 +
+                    '%'
+                  "
+                ></div>
+              </div>
+            </div>
+            <span class="bar-label">{{ m.month }}</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Status + Format breakdown -->
+      <div class="card side-stats">
+        <div class="card-head"><h2>📊 Répartition des événements</h2></div>
+
+        <div class="stat-section">
+          <p class="stat-section-title">Par statut</p>
+          <div class="stat-row" *ngFor="let s of statusStats">
+            <span class="stat-row-label">{{ s.label }}</span>
+            <div class="stat-bar-bg">
+              <div
+                class="stat-bar-fill"
+                [style.width]="barPct(s.count, events.length) + '%'"
+                [style.background]="s.color"
+              ></div>
+            </div>
+            <span class="stat-row-count">{{ s.count }}</span>
+          </div>
+        </div>
+
+        <div class="stat-divider"></div>
+
+        <div class="stat-section">
+          <p class="stat-section-title">Par format</p>
+          <div class="format-pills">
+            <div class="format-pill" *ngFor="let f of formatStats">
+              <div
+                class="format-donut"
+                [style.background]="
+                  'conic-gradient(#00D4AA ' +
+                  f.percent +
+                  '%, #1e2a3a ' +
+                  f.percent +
+                  '%)'
+                "
+              >
+                <span class="donut-val">{{ f.percent }}%</span>
+              </div>
+              <div class="format-info">
+                <span class="format-label">{{ f.label }}</span>
+                <span class="format-count">{{ f.count }} événements</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══ ROW 2 : Revenue line + Categories ═════════════════ -->
+    <div class="row-2col">
+      <!-- Revenue sparkline -->
+      <div class="card chart-card">
+        <div class="card-head">
+          <h2>💰 Revenus mensuels (TND)</h2>
+          <span class="total-badge"
+            >Total: {{ kpis[3].value | number }} TND</span
+          >
+        </div>
+        <div class="revenue-chart">
+          <div class="rev-bars">
+            <div
+              class="rev-col"
+              *ngFor="let m of monthStats"
+              [title]="m.month + ': ' + m.revenue + ' TND'"
+            >
+              <div
+                class="rev-bar"
+                [style.height]="
+                  barPct(m.revenue, getMaxVal(monthStats, 'revenue')) * 0.85 +
+                  '%'
+                "
+              >
+                <span class="rev-tip" *ngIf="m.revenue > 0">{{
+                  m.revenue
+                }}</span>
+              </div>
+              <span class="rev-label">{{ m.month }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Categories donut -->
+      <div class="card chart-card">
+        <div class="card-head"><h2>🏷️ Catégories d'événements</h2></div>
+        <div
+          class="categories-list"
+          *ngIf="categoryStats.length > 0; else noCats"
+        >
+          <div class="cat-item" *ngFor="let c of categoryStats">
+            <div class="cat-dot" [style.background]="c.color"></div>
+            <span class="cat-name">{{ c.name }}</span>
+            <div class="cat-bar-bg">
+              <div
+                class="cat-bar-fill"
+                [style.width]="c.percent + '%'"
+                [style.background]="c.color"
+              ></div>
+            </div>
+            <span class="cat-pct">{{ c.percent }}%</span>
+            <span class="cat-count">({{ c.count }})</span>
+          </div>
+        </div>
+        <ng-template #noCats>
+          <div class="empty-state">Aucune catégorie disponible</div>
+        </ng-template>
+      </div>
+    </div>
+
+    <!-- ══ ROW 3 : Top Events ═════════════════════════════════ -->
+    <div class="card full-card">
+      <div class="card-head">
+        <h2>🏆 Top 5 Événements par participation</h2>
+        <a routerLink="/admin/events" class="see-all">Voir tout →</a>
+      </div>
+      <div class="top-events-table" *ngIf="topEvents.length > 0; else noEvents">
+        <div class="top-ev-row top-ev-header">
+          <span>#</span>
+          <span>Événement</span>
+          <span>Catégorie</span>
+          <span>Sessions</span>
+          <span>Participants</span>
+          <span>Revenus</span>
+          <span>Taux de remplissage</span>
+          <span>Statut</span>
+        </div>
+        <div
+          class="top-ev-row"
+          *ngFor="let t of topEvents; let i = index"
+          [class.top-1]="i === 0"
+        >
+          <span
+            class="rank-badge"
+            [class.gold]="i === 0"
+            [class.silver]="i === 1"
+            [class.bronze]="i === 2"
+            >{{ i + 1 }}</span
+          >
+          <span class="ev-title">{{ t.event.title }}</span>
+          <span class="ev-cat">{{ t.event.category }}</span>
+          <span class="ev-num">{{ t.sessionCount }}</span>
+          <span class="ev-num">{{ t.participantCount }}</span>
+          <span class="ev-rev">{{ t.revenue | number }} TND</span>
+          <div class="fill-bar-wrap">
+            <div
+              class="fill-bar"
+              [style.width]="t.fillRate + '%'"
+              [style.background]="
+                t.fillRate >= 90
+                  ? '#FF6B6B'
+                  : t.fillRate >= 70
+                    ? '#FFB547'
+                    : '#00D4AA'
+              "
+            ></div>
+            <span class="fill-label">{{ t.fillRate }}%</span>
+          </div>
+          <span
+            class="status-pill"
+            [class]="'status-' + t.event.status.toLowerCase()"
+            >{{ t.event.status }}</span
+          >
+        </div>
+      </div>
+      <ng-template #noEvents
+        ><div class="empty-state">Aucun événement</div></ng-template
+      >
+    </div>
+
+    <!-- ══ ROW 4 : Upcoming Sessions + Recent Participations ══ -->
+    <div class="row-2col">
+      <!-- Upcoming sessions -->
+      <div class="card">
+        <div class="card-head">
+          <h2>📆 Prochaines sessions</h2>
+          <a routerLink="/admin/sessionevents" class="see-all">Voir tout →</a>
+        </div>
+        <div
+          class="upcoming-list"
+          *ngIf="upcomingSessions.length > 0; else noSess"
+        >
+          <div class="upcoming-item" *ngFor="let s of upcomingSessions">
+            <div class="upcoming-date-box">
+              <span class="up-day">{{ s.date | date: "dd" }}</span>
+              <span class="up-month">{{ s.date | date: "MMM" }}</span>
+            </div>
+            <div class="upcoming-info">
+              <span class="up-event">{{ getEventTitle(s.eventId) }}</span>
+              <span class="up-time">{{ s.startTime }} → {{ s.endTime }}</span>
+              <span class="up-type"
+                >{{ getSessionTypeIcon(s.type) }} {{ s.type }}</span
+              >
+            </div>
+            <div class="upcoming-meta">
+              <span class="up-seats">{{ s.availableSeats || "—" }} places</span>
+              <span class="up-days" [class.urgent]="getDaysUntil(s.date) <= 3">
+                J-{{ getDaysUntil(s.date) }}
+              </span>
+            </div>
+          </div>
+        </div>
+        <ng-template #noSess
+          ><div class="empty-state">Aucune session à venir</div></ng-template
+        >
+      </div>
+
+      <!-- Payment methods + Recent participations -->
+      <div class="card">
+        <div class="card-head">
+          <h2>💳 Modes de paiement</h2>
+        </div>
+        <div class="pm-list" *ngIf="paymentMethodStats.length > 0; else noPm">
+          <div class="pm-item" *ngFor="let pm of paymentMethodStats">
+            <span class="pm-label">{{ pm.label }}</span>
+            <div class="pm-bar-bg">
+              <div
+                class="pm-bar-fill"
+                [style.width]="pm.percent + '%'"
+                [style.background]="pm.color"
+              ></div>
+            </div>
+            <span class="pm-pct">{{ pm.percent }}%</span>
+            <span class="pm-count">{{ pm.count }}</span>
+          </div>
+        </div>
+        <ng-template #noPm
+          ><div class="empty-state">Aucune donnée</div></ng-template
+        >
+
+        <div
+          class="card-head"
+          style="
+            margin-top: 1.5rem;
+            padding-top: 1rem;
+            border-top: 1px solid #1e2a3a;
+          "
+        >
+          <h2>🕐 Inscriptions récentes</h2>
+          <a routerLink="/admin/participations" class="see-all">Voir tout →</a>
+        </div>
+        <div class="recent-list" *ngIf="recentParticipations.length > 0">
+          <div class="recent-item" *ngFor="let p of recentParticipations">
+            <div class="recent-avatar">{{ p.userId }}</div>
+            <div class="recent-info">
+              <span class="recent-event">{{ getEventTitle(p.sessionId) }}</span>
+              <span class="recent-date">{{
+                p.registrationDate | date: "dd/MM/yyyy"
+              }}</span>
+            </div>
+            <div>
+              <span
+                class="badge"
+                [ngClass]="getPaymentBadge(p.paymentStatus)"
+                >{{ p.paymentStatus }}</span
+              >
+              <div class="recent-amount">{{ p.amountPaid || 0 }} TND</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </ng-container>
+</div>
+-->

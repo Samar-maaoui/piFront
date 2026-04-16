@@ -16,5 +16,6 @@ export const TUTOR_NAV: NavItem[] = [
   { label: 'Availability', route: '/tutor/availability' },
   { label: 'My Students', route: '/tutor/students' },
   { label: 'Bookings', route: '/tutor/bookings' },
+  { label: 'Booking Dashboard', route: '/tutor/booking-dashboard' },
   { label: 'Quizzes', route: '/tutor/quiz' }
 ];

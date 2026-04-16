@@ -2,11 +2,12 @@ import { Component, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { BookingService } from '@backoffice/services/booking.service';
+import { BookingService } from '@core/services/booking.service';
 import { AuthService } from '@core/services/auth.service';
 import { Session, getSessionDisplayStatus, getSessionStatusLabel } from '@core/models/Session';
 import { SessionFeedback } from '@core/models/SessionFeedback';
 import { SessionFeedbackService } from '@backoffice/ReservationSession/Session/services/session-feedback.service';
+import Swal from 'sweetalert2';
 
 @Component({
   selector: 'app-student-sessions',
@@ -159,26 +160,28 @@ export class StudentSessionsComponent implements OnInit {
     return date.toLocaleDateString('fr-FR');
   }
 
-  startSession(session: Session): void {
-    if (!session.id) return;
-    this.bookingService.startSession(session.id).subscribe({
-      next: () => {
-        this.loadSessions(); // Refresh the list
-      },
-      error: (error: any) => {
-        console.error('Error starting session:', error);
-      }
-    });
-  }
-
   endSession(session: Session): void {
-    if (!session.id) return;
-    this.bookingService.endSession(session.id).subscribe({
-      next: () => {
-        this.loadSessions(); // Refresh the list
-      },
-      error: (error: any) => {
-        console.error('Error ending session:', error);
+    const sessionId = session.id;
+    if (!sessionId) return;
+    const dateStr = this.formatSessionDate(session);
+    const tutorName = this.getTutorName(session);
+
+    Swal.fire({
+      title: 'Terminer la session ?',
+      text: `Voulez-vous vraiment terminer la session du ${dateStr} avec ${tutorName} ?`,
+      icon: 'question',
+      showCancelButton: true,
+      confirmButtonText: 'Oui, terminer',
+      cancelButtonText: 'Annuler'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.bookingService.endSession(sessionId).subscribe({
+          next: () => {
+             Swal.fire('Terminée', 'La session a été terminée avec succès.', 'success');
+             this.loadSessions();
+          },
+          error: (error: any) => Swal.fire('Erreur', 'Une erreur est survenue en terminant la session.', 'error')
+        });
       }
     });
   }
@@ -205,7 +208,10 @@ export class StudentSessionsComponent implements OnInit {
     const sessionId = this.selectedSession.id;
     if (!sessionId) return;
 
+    const user = this.authService.getCurrentUser();
+
     const payload: Partial<SessionFeedback> = {
+      studentId: user?.id,
       rating: this.feedbackRating,
       comment: this.feedbackComment
     };
@@ -231,15 +237,25 @@ export class StudentSessionsComponent implements OnInit {
   deleteFeedback(session: Session): void {
     const feedbackId = session.feedback?.id;
     if (!feedbackId) return;
-    if (!confirm('Delete this feedback?')) return;
-
-    this.feedbackService.delete(feedbackId).subscribe({
-      next: () => {
-        session.feedback = undefined;
-        this.filterSessions();
-      },
-      error: (error: any) => {
-        console.error('Error deleting feedback:', error);
+    
+    Swal.fire({
+      title: 'Supprimer le feedback ?',
+      text: 'Êtes-vous sûr de vouloir supprimer cet avis ?',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonText: 'Oui, supprimer',
+      confirmButtonColor: '#d33',
+      cancelButtonText: 'Annuler'
+    }).then((result) => {
+      if (result.isConfirmed) {
+        this.feedbackService.delete(feedbackId).subscribe({
+          next: () => {
+            session.feedback = undefined;
+            this.filterSessions();
+            Swal.fire('Supprimé', 'Le feedback a été supprimé.', 'success');
+          },
+          error: (error: any) => Swal.fire('Erreur', 'Impossible de supprimer le feedback.', 'error')
+        });
       }
     });
   }

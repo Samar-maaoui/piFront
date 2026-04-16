@@ -1,0 +1,88 @@
+<div class="pay-page">
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="pay-loading">
+    <div class="pay-spinner"></div>
+    <p>Chargement de votre réservation...</p>
+  </div>
+
+  <!-- Payment Modal Overlay -->
+  <div class="pay-overlay" *ngIf="!loading && showModal">
+    <div class="pay-modal">
+
+      <!-- Header -->
+      <div class="pay-modal-header">
+        <div class="pay-modal-title">
+          <span>🔒</span>
+          <span>Paiement sécurisé</span>
+        </div>
+        <button class="pay-close-btn" (click)="cancel()" [disabled]="paymentProcessing">✕</button>
+      </div>
+
+      <!-- Session recap -->
+      <div class="pay-recap" *ngIf="booking">
+        <div class="pay-recap-row">
+          <span class="pay-recap-label">Tuteur</span>
+          <span class="pay-recap-value">{{ tutor ? tutor.firstName + ' ' + tutor.lastName : '—' }}</span>
+        </div>
+        <div class="pay-recap-row">
+          <span class="pay-recap-label">Date</span>
+          <span class="pay-recap-value">{{ formatDate(booking.sessionDate) }}</span>
+        </div>
+        <div class="pay-recap-row">
+          <span class="pay-recap-label">Créneau</span>
+          <span class="pay-recap-value">{{ booking.startTime }} – {{ booking.endTime }}</span>
+        </div>
+        <div class="pay-recap-row pay-recap-total">
+          <span class="pay-recap-label">Montant</span>
+          <span class="pay-recap-amount">{{ amount | number:'1.2-2' }} DT</span>
+        </div>
+      </div>
+
+      <!-- Stripe form -->
+      <div class="pay-form-section">
+        <div *ngIf="!stripeReady" class="pay-stripe-loading">
+          ⏳ Chargement du formulaire de paiement...
+        </div>
+
+        <div [class.pay-fields-hidden]="!stripeReady">
+          <div class="pay-field">
+            <label class="pay-label">Nom sur la carte</label>
+            <input type="text" [(ngModel)]="cardName" placeholder="ex. Ahmed Ben Ali"
+              class="pay-input" [disabled]="paymentProcessing" />
+          </div>
+          <div class="pay-field">
+            <label class="pay-label">Numéro de carte</label>
+            <div id="stripe-card-number" class="stripe-el"></div>
+          </div>
+          <div class="pay-stripe-row">
+            <div class="pay-field pay-field-half">
+              <label class="pay-label">Expiration</label>
+              <div id="stripe-card-expiry" class="stripe-el"></div>
+            </div>
+            <div class="pay-field pay-field-half">
+              <label class="pay-label">CVC</label>
+              <div id="stripe-card-cvc" class="stripe-el"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="pay-modal-actions">
+        <button class="btn-pay-now"
+          [disabled]="paymentProcessing || !stripeReady || !cardName.trim()"
+          (click)="pay()">
+          <span *ngIf="paymentProcessing">⏳ Traitement en cours...</span>
+          <span *ngIf="!paymentProcessing">💳 Payer {{ amount | number:'1.2-2' }} DT</span>
+        </button>
+        <button class="btn-cancel-pay" (click)="cancel()" [disabled]="paymentProcessing">
+          Annuler
+        </button>
+      </div>
+
+      <p class="pay-secured-note">🔐 Paiement sécurisé par Stripe. Vos données ne sont jamais stockées.</p>
+    </div>
+  </div>
+
+</div>

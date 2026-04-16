@@ -2,8 +2,8 @@ import { Component, OnInit, Inject, PLATFORM_ID } from '@angular/core';
 import { isPlatformBrowser, CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 import { Router } from '@angular/router';
-import { BookingService } from '@backoffice/services/booking.service';
-import { StaticTutor } from '@core/models/static-tutors';
+import { BookingService } from '@core/services/booking.service';
+import { Tutor } from '@core/models/user.model';
 import { AiRecommendationService, TutorRecommendation, StudentPreferences } from '@core/services/ai-recommendation.service';
 
 @Component({
@@ -15,8 +15,8 @@ import { AiRecommendationService, TutorRecommendation, StudentPreferences } from
 })
 export class TutorListComponent implements OnInit {
 
-  tutors: StaticTutor[] = [];
-  filteredTutors: StaticTutor[] = [];
+  tutors: Tutor[] = [];
+  filteredTutors: Tutor[] = [];
   loading = true;
   searchTerm = '';
   sortBy = 'rating';
@@ -48,8 +48,8 @@ export class TutorListComponent implements OnInit {
   }
 
   loadTutors(): void {
-    this.bookingService.getStaticTutors().subscribe({
-      next: (tutors: StaticTutor[]) => {
+    this.bookingService.getTutors().subscribe({
+      next: (tutors: Tutor[]) => {
         this.tutors = tutors;
         this.filterTutors();
         this.loading = false;
@@ -63,18 +63,18 @@ export class TutorListComponent implements OnInit {
     if (this.searchTerm.trim()) {
       const term = this.searchTerm.toLowerCase();
       filtered = filtered.filter(t =>
-        t.specialization.some(s => s.toLowerCase().includes(term)) ||
+        t.specialization?.some(s => s.toLowerCase().includes(term)) ||
         t.firstName.toLowerCase().includes(term) ||
         t.lastName.toLowerCase().includes(term) ||
-        t.bio.toLowerCase().includes(term)
+        t.bio?.toLowerCase().includes(term)
       );
     }
     filtered.sort((a, b) => {
       switch (this.sortBy) {
-        case 'rating':      return b.rating - a.rating;
-        case 'price-low':   return a.hourlyRate - b.hourlyRate;
-        case 'price-high':  return b.hourlyRate - a.hourlyRate;
-        case 'experience':  return b.experienceYears - a.experienceYears;
+        case 'rating':      return (b.rating ?? 0) - (a.rating ?? 0);
+        case 'price-low':   return (a.hourlyRate ?? 0) - (b.hourlyRate ?? 0);
+        case 'price-high':  return (b.hourlyRate ?? 0) - (a.hourlyRate ?? 0);
+        case 'experience':  return (b.experienceYears ?? 0) - (a.experienceYears ?? 0);
         default: return 0;
       }
     });
@@ -141,11 +141,11 @@ export class TutorListComponent implements OnInit {
     return '★'.repeat(filled) + '☆'.repeat(5 - filled);
   }
 
-  selectTutor(tutor: StaticTutor): void {
+  selectTutor(tutor: Tutor): void {
     this.router.navigate(['/student/tutors', tutor.id]);
   }
 
-  bookTutor(tutor: StaticTutor): void {
+  bookTutor(tutor: Tutor): void {
     this.router.navigate(['/student/bookings/new'], { queryParams: { tutorId: tutor.id } });
   }
 }

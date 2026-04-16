@@ -3,8 +3,8 @@ import { CommonModule, isPlatformBrowser } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { HttpClient } from '@angular/common/http';
 import { AuthService } from '../../../../core/services/auth.service';
-import { TtsService } from '../../../../backoffice/services/Tts.service';
-import { UnsplashService, UnsplashImage } from '../../../../backoffice/services/Unsplash.service';
+import { TtsService } from '../../../../core/services/Tts.service';
+import { UnsplashService, UnsplashImage } from '../../../../core/services/Unsplash.service';
 import { LottieComponent, AnimationOptions } from 'ngx-lottie';
 import Swal from 'sweetalert2';
 
@@ -60,7 +60,7 @@ export class StudentQuizTakeComponent implements OnInit, OnDestroy {
   showCorrectAnim = false;
   showWrongAnim   = false;
 
-  private api = 'http://localhost:8081/api';
+  private api = 'http://localhost:8080/api';
 
   constructor(
     private http: HttpClient,

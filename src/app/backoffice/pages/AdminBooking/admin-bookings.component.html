@@ -124,10 +124,10 @@
           <td>
             <div class="action-btns">
               <button class="action-btn confirm" *ngIf="b.status === 'PENDING'"
-                      (click)="confirmBooking(b.id)" title="Confirmer">✅</button>
+                      (click)="confirmBooking(b.id!)" title="Confirmer">✅</button>
               <button class="action-btn cancel" *ngIf="b.status !== 'COMPLETED' && b.status !== 'CANCELLED' && b.status !== 'REJECTED'"
-                      (click)="cancelBooking(b.id)" title="Annuler">❌</button>
-              <button class="action-btn history" (click)="viewHistory(b.id)" title="Historique">📜</button>
+                      (click)="cancelBooking(b.id!)" title="Annuler">❌</button>
+              <button class="action-btn history" (click)="viewHistory(b.id!)" title="Historique">📜</button>
             </div>
           </td>
         </tr>

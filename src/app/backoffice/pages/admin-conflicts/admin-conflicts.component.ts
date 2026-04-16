@@ -5,7 +5,7 @@ import { FormsModule } from '@angular/forms';
 import { 
   BookingConflictService, 
   BookingConflict 
-} from '../../services/booking-conflit.service';
+} from '../../../core/services/booking-conflit.service';
 
 @Component({
   selector: 'app-admin-conflicts',

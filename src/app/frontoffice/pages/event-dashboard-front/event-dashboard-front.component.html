@@ -1,0 +1,219 @@
+<div class="myspace-container">
+  <!-- ===== HEADER ===== -->
+  <div class="myspace-header">
+    <div class="avatar">{{ getInitials() }}</div>
+    <div>
+      <h2>{{ currentUser?.firstName }} {{ currentUser?.lastName }}</h2>
+      <p class="email">{{ currentUser?.email }}</p>
+    </div>
+  </div>
+
+  <div *ngIf="loading" class="loading-state">
+    <div class="spinner"></div>
+    <p>Chargement de votre espace...</p>
+  </div>
+
+  <div *ngIf="!loading">
+    <!-- ===== STATS ===== -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <span class="stat-icon">🎯</span>
+        <p class="stat-value">{{ totalEvents }}</p>
+        <p class="stat-label">Événements rejoints</p>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">💰</span>
+        <p class="stat-value">{{ totalPaid | number: "1.0-0" }} TND</p>
+        <p class="stat-label">Total payé</p>
+      </div>
+      <div class="stat-card">
+        <span class="stat-icon">📅</span>
+        <p class="stat-value">{{ upcomingSessions }}</p>
+        <p class="stat-label">Sessions à venir</p>
+      </div>
+      <div class="stat-card" [class.stat-warning]="pendingPayments > 0">
+        <span class="stat-icon">⏳</span>
+        <p class="stat-value">{{ pendingPayments }}</p>
+        <p class="stat-label">Paiements en attente</p>
+      </div>
+    </div>
+
+    <!-- ===== MES ÉVÉNEMENTS ===== -->
+    <div class="section">
+      <h3 class="section-title">Mes événements</h3>
+
+      <div *ngIf="participations.length === 0" class="empty-state">
+        📭 Vous n'êtes inscrit à aucun événement
+      </div>
+
+      <div class="events-grid">
+        <div class="event-card" *ngFor="let p of participations">
+          <div class="event-card-header">
+            <div>
+              <h4>{{ p.eventTitle || "Événement #" + p.sessionId }}</h4>
+              <p class="event-meta">
+                📅 {{ p.registrationDate }} · 💺 Session {{ p.sessionId }}
+              </p>
+            </div>
+            <span
+              class="badge"
+              [ngClass]="{
+                'badge-success': p.paymentStatus === 'PAID',
+                'badge-warning': p.paymentStatus === 'PENDING',
+                'badge-danger': p.status === 'CANCELLED',
+              }"
+            >
+              {{
+                p.paymentStatus === "PAID"
+                  ? "Payé"
+                  : p.paymentStatus === "PENDING"
+                    ? "En attente"
+                    : p.status
+              }}
+            </span>
+          </div>
+
+          <!-- Progress tracker -->
+          <div class="progress-tracker">
+            <div class="step" [class.done]="getProgressStep(p) >= 1">
+              <div class="step-dot"></div>
+              <p>Inscrit</p>
+            </div>
+            <div class="step-line" [class.done]="getProgressStep(p) >= 2"></div>
+            <div class="step" [class.done]="getProgressStep(p) >= 2">
+              <div class="step-dot"></div>
+              <p>Payé</p>
+            </div>
+            <div class="step-line" [class.done]="getProgressStep(p) >= 3"></div>
+            <div class="step" [class.done]="getProgressStep(p) >= 3">
+              <div class="step-dot"></div>
+              <p>Présent</p>
+            </div>
+            <div class="step-line" [class.done]="getProgressStep(p) >= 4"></div>
+            <div class="step" [class.done]="getProgressStep(p) >= 4">
+              <div class="step-dot"></div>
+              <p>Certifié</p>
+            </div>
+          </div>
+
+          <div class="event-card-footer">
+            <span class="amount"
+              >{{ p.amountPaid | number: "1.0-0" }} TND ·
+              {{ p.paymentMethod }}</span
+            >
+            <button
+              class="btn-cancel"
+              (click)="cancelParticipation(p.id)"
+              *ngIf="p.status !== 'CANCELLED' && p.status !== 'ATTENDED'"
+            >
+              Annuler
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== TIMELINE ===== -->
+    <div class="section">
+      <h3 class="section-title">Activité récente</h3>
+      <div class="timeline">
+        <div class="timeline-item" *ngFor="let item of timeline">
+          <div
+            class="timeline-dot"
+            [style.background]="item.type === 'payment' ? '#1D9E75' : '#378ADD'"
+          ></div>
+          <div class="timeline-content">
+            <div class="timeline-header">
+              <p class="timeline-title">{{ item.title }}</p>
+              <span
+                class="badge"
+                [ngClass]="{
+                  'badge-success':
+                    item.status === 'PAID' || item.status === 'REGISTERED',
+                  'badge-warning': item.status === 'PENDING',
+                  'badge-danger': item.status === 'CANCELLED',
+                }"
+                >{{ item.status }}</span
+              >
+            </div>
+            <p class="timeline-sub">
+              {{ item.date | date: "dd MMM yyyy" }}
+              <span *ngIf="item.amount">
+                · {{ item.amount | number: "1.0-0" }} TND</span
+              >
+              <span *ngIf="item.subtitle"> · {{ item.subtitle }}</span>
+            </p>
+          </div>
+        </div>
+        <div *ngIf="timeline.length === 0" class="empty-state">
+          📭 Aucune activité pour le moment
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== MES PAIEMENTS ===== -->
+    <div class="section">
+      <div class="section-header">
+        <h3 class="section-title">Mes paiements</h3>
+        <div class="filter-btns">
+          <button
+            [class.active]="paymentFilter === 'ALL'"
+            (click)="setPaymentFilter('ALL')"
+          >
+            Tous
+          </button>
+          <button
+            [class.active]="paymentFilter === 'PAID'"
+            (click)="setPaymentFilter('PAID')"
+          >
+            Payés
+          </button>
+          <button
+            [class.active]="paymentFilter === 'PENDING'"
+            (click)="setPaymentFilter('PENDING')"
+          >
+            En attente
+          </button>
+        </div>
+      </div>
+
+      <div *ngIf="filteredPayments.length === 0" class="empty-state">
+        📭 Aucun paiement trouvé
+      </div>
+
+      <div class="payments-list">
+        <div class="payment-row" *ngFor="let pay of filteredPayments">
+          <div class="payment-info">
+            <p class="payment-ref">{{ pay.reference }}</p>
+            <p class="payment-meta">
+              {{ pay.paymentDate | date: "dd MMM yyyy" }} ·
+              {{ pay.paymentMethod }}
+              <span *ngIf="pay.sessionId"> · Session {{ pay.sessionId }}</span>
+            </p>
+          </div>
+          <div class="payment-right">
+            <span class="payment-amount"
+              >{{ pay.amount | number: "1.0-0" }} TND</span
+            >
+            <span
+              class="badge"
+              [ngClass]="{
+                'badge-success': pay.status === 'PAID',
+                'badge-warning': pay.status === 'PENDING',
+                'badge-danger': pay.status === 'FAILED',
+              }"
+              >{{ pay.status }}</span
+            >
+            <button
+              class="btn-receipt"
+              (click)="downloadReceipt(pay)"
+              *ngIf="pay.status === 'PAID'"
+            >
+              📄 Reçu
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

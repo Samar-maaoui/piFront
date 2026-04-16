@@ -14,7 +14,7 @@
       <div class="tutor-avatar">{{ tutor.firstName[0] }}{{ tutor.lastName[0] }}</div>
       <div class="tutor-info">
         <h3>{{ tutor.firstName }} {{ tutor.lastName }}</h3>
-        <p class="tutor-spec">{{ tutor.specialization.join(', ') }}</p>
+        <p class="tutor-spec">{{ tutor.specialization?.join(', ') }}</p>
         <span class="tutor-rating">⭐ {{ tutor.rating }} ({{ tutor.reviewCount }} reviews)</span>
       </div>
       <div class="tutor-rate">{{ tutor.hourlyRate }} DT/h</div>
@@ -47,39 +47,34 @@
         </span>
       </div>
 
-      <!-- Date -->
+      <!-- Available Slots grouped by date -->
       <div class="form-group">
-        <label>Session date</label>
-        <input type="date"
-               formControlName="sessionDate"
-               [min]="minDate"
-               (change)="onDateChange()"
-               [class.is-invalid]="f['sessionDate'].invalid && f['sessionDate'].touched">
-        <span class="field-error" *ngIf="f['sessionDate'].hasError('required') && f['sessionDate'].touched">
-          Date is required.
-        </span>
-        <span class="field-error" *ngIf="f['sessionDate'].hasError('pastDate') && f['sessionDate'].touched">
-          Date must be today or in the future.
-        </span>
-      </div>
+        <label>Choose an available slot</label>
 
-      <!-- Time Slots -->
-      <div class="form-group" *ngIf="availableSlots.length > 0">
-        <label>Available time slots</label>
-        <div class="time-slots">
-          <button type="button" *ngFor="let slot of availableSlots"
-                  class="time-slot" [class.selected]="selectedSlot?.startTime === slot.startTime"
-                  (click)="selectSlot(slot)">
-            {{ slot.startTime }} – {{ slot.endTime }}
-          </button>
-        </div>
-        <span class="field-error" *ngIf="slotTouched && !selectedSlot">
-          Please select a time slot.
-        </span>
-      </div>
+        <div *ngIf="slotsLoading" class="state-loading">Loading slots...</div>
 
-      <div *ngIf="availableSlots.length === 0 && f['sessionDate'].value" class="no-slots">
-        No available slots for this date.
+        <ng-container *ngIf="!slotsLoading">
+          <div *ngIf="groupedSlots.length === 0" class="no-slots">
+            No available slots in the next 14 days.
+          </div>
+
+          <div *ngFor="let group of groupedSlots" class="slot-group">
+            <div class="slot-group-date">{{ group.displayDate }}</div>
+            <div class="time-slots">
+              <button type="button"
+                      *ngFor="let slot of group.slots"
+                      class="time-slot"
+                      [class.selected]="selectedSlot?.date === slot.date && selectedSlot?.startTime === slot.startTime"
+                      (click)="selectSlot(slot)">
+                {{ slot.startTime }} – {{ slot.endTime }}
+              </button>
+            </div>
+          </div>
+
+          <span class="field-error" *ngIf="slotTouched && !selectedSlot">
+            Please select a time slot.
+          </span>
+        </ng-container>
       </div>
 
       <!-- Notes -->
@@ -94,8 +89,8 @@
       </div>
 
       <!-- Summary -->
-      <div class="booking-summary" *ngIf="selectedSlot && f['sessionDate'].valid">
-        <div class="summary-row"><span>Date</span><span>{{ formatDate(f['sessionDate'].value) }}</span></div>
+      <div class="booking-summary" *ngIf="selectedSlot">
+        <div class="summary-row"><span>Date</span><span>{{ formatDate(selectedSlot.date) }}</span></div>
         <div class="summary-row"><span>Time</span><span>{{ selectedSlot.startTime }} – {{ selectedSlot.endTime }}</span></div>
         <div class="summary-row"><span>Duration</span><span>{{ calculateDuration() }}h</span></div>
         <div class="summary-row total"><span>Total</span><span>{{ calculateTotal() }} DT</span></div>
@@ -119,8 +114,8 @@
           <div class="pack-sessions">{{ pack.sessions }}</div>
           <div class="pack-label">sessions</div>
           <div class="pack-discount">-{{ pack.discount }}%</div>
-          <div class="pack-savings" *ngIf="tutor">
-            Save {{ (tutor.hourlyRate * pack.sessions * pack.discount / 100).toFixed(0) }} DT
+          <div class="pack-savings" *ngIf="tutor?.hourlyRate != null">
+            Save {{ ((tutor.hourlyRate ?? 0) * pack.sessions * pack.discount / 100).toFixed(0) }} DT
           </div>
         </div>
       </div>
@@ -207,7 +202,7 @@
           </div>
 
           <button class="btn-submit btn-pack" [disabled]="submitting" (click)="submitPack()">
-            {{ submitting ? 'Creating...' : 'Book pack of ' + selectedPack.sessions + ' sessions' }}
+            Book pack of {{ selectedPack.sessions }} sessions
           </button>
           <p class="info-note">{{ selectedPack.sessions }} bookings will be created. The tutor must confirm each one.</p>
         </div>
@@ -216,7 +211,5 @@
 
   </ng-container>
 
-  <div *ngIf="errorMessage" class="error-msg">{{ errorMessage }}</div>
-  <div *ngIf="successMessage" class="success-msg">{{ successMessage }}</div>
 
 </div>

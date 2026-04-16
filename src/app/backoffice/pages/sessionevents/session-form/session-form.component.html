@@ -1,0 +1,229 @@
+<div class="page-wrapper">
+  <div class="form-inner">
+    <!-- ── HEADER ── -->
+    <div class="page-header">
+      <div>
+        <h2 class="page-title">{{ isEdit ? "Update" : "Add" }} Session</h2>
+        <p class="page-subtitle" *ngIf="parentEvent">
+          Événement : <strong>{{ parentEvent.title }}</strong>
+          <span class="format-badge">{{ parentEvent.format }}</span>
+        </p>
+      </div>
+      <button class="btn-back" (click)="cancel()">← Back</button>
+    </div>
+
+    <!-- ── ERREUR ── -->
+    <div *ngIf="submitError" class="alert-error">⚠️ {{ submitError }}</div>
+
+    <!-- ── LOADING parent event ── -->
+    <div *ngIf="parentEventLoading" class="loading-hint">
+      <span class="spin-sm"></span> Chargement de l'événement parent...
+    </div>
+
+    <form
+      *ngIf="!parentEventLoading"
+      [formGroup]="form"
+      (ngSubmit)="submit()"
+      class="form-card"
+    >
+      <!-- ══ SECTION 1 : Planification ══ -->
+      <div class="form-section">
+        <div class="section-title">📅 Planification</div>
+
+        <div class="field-row">
+          <div class="field-col">
+            <label class="field-label"
+              >Date <span class="required">*</span></label
+            >
+            <input
+              type="date"
+              formControlName="date"
+              class="field-input"
+              [class.invalid]="f['date'].invalid && f['date'].touched"
+            />
+            <div
+              class="field-error"
+              *ngIf="f['date'].invalid && f['date'].touched"
+            >
+              ⚠ La date est obligatoire
+            </div>
+          </div>
+          <div class="field-col">
+            <label class="field-label"
+              >Type <span class="required">*</span></label
+            >
+            <select
+              formControlName="type"
+              class="field-select"
+              [class.invalid]="f['type'].invalid && f['type'].touched"
+            >
+              <option value="" disabled>Sélectionner un type</option>
+              <option *ngFor="let t of sessionTypes" [value]="t">
+                {{ t }}
+              </option>
+            </select>
+            <div
+              class="field-error"
+              *ngIf="f['type'].invalid && f['type'].touched"
+            >
+              ⚠ Le type est obligatoire
+            </div>
+          </div>
+        </div>
+
+        <div class="field-row">
+          <div class="field-col">
+            <label class="field-label"
+              >Heure de début <span class="required">*</span></label
+            >
+            <input
+              type="time"
+              formControlName="startTime"
+              class="field-input"
+              [class.invalid]="f['startTime'].invalid && f['startTime'].touched"
+            />
+            <div
+              class="field-error"
+              *ngIf="f['startTime'].invalid && f['startTime'].touched"
+            >
+              ⚠ L'heure de début est obligatoire
+            </div>
+          </div>
+          <div class="field-col">
+            <label class="field-label"
+              >Heure de fin <span class="required">*</span></label
+            >
+            <input
+              type="time"
+              formControlName="endTime"
+              class="field-input"
+              [class.invalid]="f['endTime'].invalid && f['endTime'].touched"
+            />
+            <div
+              class="field-error"
+              *ngIf="f['endTime'].invalid && f['endTime'].touched"
+            >
+              ⚠ L'heure de fin est obligatoire
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SECTION 2 : Places ══ -->
+      <div class="form-section">
+        <div class="section-title">💺 Places disponibles</div>
+        <div class="field-group">
+          <label class="field-label"
+            >Places <span class="required">*</span></label
+          >
+          <input
+            type="number"
+            formControlName="availableSeats"
+            class="field-input"
+            min="1"
+            placeholder="Ex: 50"
+            [class.invalid]="
+              f['availableSeats'].invalid && f['availableSeats'].touched
+            "
+          />
+          <div
+            class="field-error"
+            *ngIf="f['availableSeats'].invalid && f['availableSeats'].touched"
+          >
+            ⚠ Doit être un nombre positif
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SECTION 3 : Localisation — conditionnelle selon format parent ══ -->
+      <div class="form-section">
+        <!-- ── Présentiel ou Hybride → Salle ── -->
+        <ng-container *ngIf="showRoom">
+          <div class="section-title">🏢 Salle</div>
+          <div class="format-inherited-hint">
+            <span class="hint-icon">ℹ️</span>
+            Format de l'événement : <strong>{{ parentEvent?.format }}</strong> —
+            une salle est requise.
+          </div>
+          <div class="field-group">
+            <label class="field-label"
+              >Salle <span class="required">*</span></label
+            >
+            <input
+              type="text"
+              formControlName="room"
+              class="field-input"
+              placeholder="Ex: Salle A, Amphi 3..."
+              [class.invalid]="f['room'].invalid && f['room'].touched"
+            />
+            <div
+              class="field-error"
+              *ngIf="f['room'].invalid && f['room'].touched"
+            >
+              ⚠ La salle est obligatoire
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- ── En Ligne ou Hybride → Lien réunion ── -->
+        <ng-container *ngIf="showMeetingLink">
+          <div
+            class="section-title"
+            [style.margin-top]="showRoom ? '20px' : '0'"
+          >
+            🌐 Lien de réunion
+          </div>
+          <div class="format-inherited-hint">
+            <span class="hint-icon">ℹ️</span>
+            Format de l'événement : <strong>{{ parentEvent?.format }}</strong> —
+            un lien est requis.
+          </div>
+          <div class="field-group">
+            <label class="field-label"
+              >Lien Meet / Zoom <span class="required">*</span></label
+            >
+            <input
+              type="text"
+              formControlName="meetingLink"
+              class="field-input"
+              placeholder="https://meet.google.com/... ou https://zoom.us/..."
+              [class.invalid]="
+                f['meetingLink'].invalid && f['meetingLink'].touched
+              "
+            />
+            <div
+              class="field-error"
+              *ngIf="f['meetingLink'].invalid && f['meetingLink'].touched"
+            >
+              ⚠ Le lien de réunion est obligatoire
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- ── Aucun format reconnu ── -->
+        <ng-container *ngIf="!showRoom && !showMeetingLink && parentEvent">
+          <div class="format-unknown-hint">
+            Format non reconnu — aucun champ de localisation requis.
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- ══ ACTIONS ══ -->
+      <div class="form-actions">
+        <button type="button" class="btn-cancel" (click)="cancel()">
+          Cancel
+        </button>
+        <a
+          [routerLink]="['/admin/events', eventId, 'sessions']"
+          class="btn-back"
+        >
+          ← Back to sessions
+        </a>
+        <button type="submit" class="btn-submit" [disabled]="loading">
+          <span class="spin-sm" *ngIf="loading"></span>
+          {{ isEdit ? "Save updates" : "Add session" }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, of } from 'rxjs';
 import { map, catchError } from 'rxjs/operators';
 import { environment } from '../../../environments/environment';
-import { StaticTutor } from '../models/static-tutors';
+import { Tutor } from '../models/user.model';
 
 export interface StudentPreferences {
   topic: string;
@@ -15,7 +15,7 @@ export interface StudentPreferences {
 
 export interface TutorRecommendation {
   tutorId: number;
-  tutor?: StaticTutor;
+  tutor?: Tutor;
   score: number;
   reason: string;
   matchedSpecializations: string[];
@@ -29,7 +29,7 @@ export class AiRecommendationService {
   constructor(private http: HttpClient) {}
 
   recommendTutors(
-    tutors: StaticTutor[],
+    tutors: Tutor[],
     preferences: StudentPreferences
   ): Observable<TutorRecommendation[]> {
 

@@ -1,0 +1,95 @@
+<div class="page-wrapper">
+  <div class="form-inner">
+    <!-- ── HEADER ── -->
+    <div class="page-header">
+      <div>
+        <h2 class="page-title">Sessions de l'événement</h2>
+        <p class="page-subtitle" *ngIf="event">
+          <strong>{{ event.title }}</strong>
+          <span class="format-badge">{{ event.format }}</span>
+        </p>
+      </div>
+      <a routerLink="/admin/events" class="btn-back">← Back to events</a>
+    </div>
+
+    <!-- ── BANDEAU INFO ── -->
+    <div class="info-banner">
+      <span class="info-icon">✅</span>
+      <div class="info-text">
+        <strong>Événement créé avec succès !</strong>
+        <p>
+          Vous pouvez maintenant ajouter des sessions à cet événement, ou passer
+          cette étape.
+        </p>
+      </div>
+    </div>
+
+    <!-- ── ERREUR ── -->
+    <div *ngIf="error" class="alert-error">⚠️ {{ error }}</div>
+
+    <!-- ── LOADING ── -->
+    <div *ngIf="loading" class="loading-state">
+      <div class="spinner-border"></div>
+    </div>
+
+    <!-- ── CONTENU ── -->
+    <div *ngIf="!loading">
+      <!-- Liste des sessions existantes -->
+      <div *ngIf="sessions.length > 0" class="sessions-list">
+        <div class="sessions-list-header">
+          <span>{{ sessions.length }} session(s) configurée(s)</span>
+        </div>
+
+        <div class="session-item" *ngFor="let session of sessions">
+          <div class="session-item-info">
+            <span class="session-type-badge">{{
+              getTypeLabel(session.type)
+            }}</span>
+            <span class="session-date">📅 {{ session.date }}</span>
+            <span class="session-time"
+              >🕐 {{ session.startTime }} → {{ session.endTime }}</span
+            >
+            <span class="session-room" *ngIf="session.room"
+              >🏢 {{ session.room }}</span
+            >
+            <span class="session-link" *ngIf="session.meetingLink">
+              🔗
+              <a [href]="session.meetingLink" target="_blank">Lien réunion</a>
+            </span>
+            <span class="session-seats"
+              >💺 {{ session.availableSeats }} places</span
+            >
+          </div>
+          <div class="session-item-actions">
+            <button class="btn-edit" (click)="editSession(session.id!)">
+              ✏️
+            </button>
+            <button class="btn-delete" (click)="deleteSession(session.id!)">
+              🗑️
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty state -->
+      <div *ngIf="sessions.length === 0" class="empty-sessions">
+        <div class="empty-icon">📭</div>
+        <p>Aucune session configurée pour cet événement.</p>
+        <p class="empty-hint">
+          Sans session, les clients pourront quand même rejoindre l'événement
+          directement.
+        </p>
+      </div>
+
+      <!-- ── ACTIONS ── -->
+      <div class="sessions-actions">
+        <button class="btn-add-session" (click)="addSession()">
+          ➕ Ajouter une session
+        </button>
+        <button class="btn-skip" (click)="skip()">
+          {{ sessions.length > 0 ? "✅ Terminer" : "Passer cette étape →" }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

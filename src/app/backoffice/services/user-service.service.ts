@@ -7,7 +7,7 @@ import { Observable } from 'rxjs';
 })
 export class UserServiceService {
 
-  private apiUrl = 'http://localhost:8081/users'
+  private apiUrl = 'http://localhost:8080/users'
 
   constructor(private http: HttpClient) { }
     getAllUsers(): Observable<any> {
@@ -26,4 +26,9 @@ export class UserServiceService {
       return this.http.delete<any>(`${this.apiUrl}/deleteUser/${id}`);
     }
 
-  }
+    getAllTutorProfiles(): Observable<any[]> {
+      return this.http.get<any[]>('http://localhost:8080/tutorProfile/getAllTutorProfiles');
+    }
+
+}
+

@@ -1,0 +1,356 @@
+<div class="page-wrapper">
+  <div class="form-inner">
+    <!-- ── HEADER ── -->
+    <div class="page-header">
+      <h2 class="page-title">{{ isEdit ? " Update" : " Add" }} Event</h2>
+      <a routerLink="/admin/events" class="btn-back">← Back</a>
+    </div>
+
+    <!-- ── ERREUR GLOBALE ── -->
+    <div *ngIf="submitError" class="alert-error">⚠️ {{ submitError }}</div>
+
+    <form [formGroup]="form" (ngSubmit)="submit()" class="form-card">
+      <!-- ══ SECTION 1 : Informations générales ══ -->
+      <div class="form-section">
+        <div class="section-title">📋 Informations générales</div>
+
+        <!-- Titre -->
+        <div class="field-group">
+          <label class="field-label"
+            >Titre <span class="required">*</span></label
+          >
+          <input
+            formControlName="title"
+            class="field-input"
+            placeholder="Nom de l'événement"
+            [class.invalid]="f['title'].invalid && f['title'].touched"
+          />
+          <div
+            class="field-error"
+            *ngIf="f['title'].invalid && f['title'].touched"
+          >
+            ⚠ Titre requis (min 3 caractères)
+          </div>
+        </div>
+
+        <!-- Description -->
+        <div class="field-group">
+          <label class="field-label"
+            >Description <span class="required">*</span></label
+          >
+          <textarea
+            formControlName="description"
+            class="field-textarea"
+            rows="3"
+            placeholder="Décrivez votre événement..."
+            [class.invalid]="
+              f['description'].invalid && f['description'].touched
+            "
+          ></textarea>
+          <div
+            class="field-error"
+            *ngIf="f['description'].invalid && f['description'].touched"
+          >
+            ⚠ Description requise (min 10 caractères)
+          </div>
+        </div>
+
+        <!-- Catégorie + Format -->
+        <div class="field-row">
+          <div class="field-col">
+            <label class="field-label"
+              >Catégorie <span class="required">*</span></label
+            >
+            <input
+              formControlName="category"
+              class="field-input"
+              placeholder="Ex: Technologie, Sport..."
+              [class.invalid]="f['category'].invalid && f['category'].touched"
+            />
+            <div
+              class="field-error"
+              *ngIf="f['category'].invalid && f['category'].touched"
+            >
+              ⚠ Catégorie requise
+            </div>
+          </div>
+          <div class="field-col">
+            <label class="field-label"
+              >Format <span class="required">*</span></label
+            >
+            <select
+              formControlName="format"
+              class="field-select"
+              [class.invalid]="f['format'].invalid && f['format'].touched"
+            >
+              <option value="" disabled>Choisir un format</option>
+              <option *ngFor="let option of formatOptions" [value]="option">
+                {{ option }}
+              </option>
+            </select>
+            <div
+              class="field-error"
+              *ngIf="f['format'].invalid && f['format'].touched"
+            >
+              ⚠ Format requis
+            </div>
+          </div>
+        </div>
+
+        <!-- Statut -->
+        <div class="field-group">
+          <label class="field-label"
+            >Statut <span class="required">*</span></label
+          >
+          <select
+            formControlName="status"
+            class="field-select"
+            [class.invalid]="f['status'].invalid && f['status'].touched"
+          >
+            <option *ngFor="let option of statusOptions" [value]="option">
+              {{ option }}
+            </option>
+          </select>
+          <div
+            class="field-error"
+            *ngIf="f['status'].invalid && f['status'].touched"
+          >
+            ⚠ Statut requis
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SECTION 2 : Localisation — conditionnelle ══ -->
+      <div class="form-section" *ngIf="currentFormat">
+        <!-- ── Cas : Présentiel ou Hybride → Maps ── -->
+        <ng-container *ngIf="showMap">
+          <div class="section-title">📍 Localisation</div>
+
+          <div class="field-group">
+            <label class="field-label"
+              >Lieu <span class="required">*</span></label
+            >
+            <input
+              formControlName="location"
+              class="field-input"
+              placeholder="Sélectionnez sur la carte ci-dessous"
+              [class.invalid]="f['location'].invalid && f['location'].touched"
+            />
+            <div
+              class="field-error"
+              *ngIf="f['location'].invalid && f['location'].touched"
+            >
+              ⚠ Lieu requis
+            </div>
+          </div>
+
+          <!-- Carte Leaflet -->
+          <div>
+            <div class="map-section-label">🗺️ Sélectionner sur la carte</div>
+            <div class="map-search-group">
+              <input
+                type="text"
+                class="field-input"
+                placeholder="Rechercher une adresse..."
+                [(ngModel)]="searchAddress"
+                [ngModelOptions]="{ standalone: true }"
+                (keyup.enter)="searchOnMap()"
+              />
+              <button
+                type="button"
+                class="btn-map-search"
+                (click)="searchOnMap()"
+                [disabled]="geocodingLoading"
+              >
+                <span class="spin-sm" *ngIf="geocodingLoading"></span>
+                🔍 Rechercher
+              </button>
+              <button
+                type="button"
+                class="btn-locate"
+                (click)="locateMe()"
+                title="Ma position actuelle"
+              >
+                🎯
+              </button>
+            </div>
+
+            <div *ngIf="geocodingError" class="map-alert-warning">
+              ⚠️ {{ geocodingError }}
+            </div>
+
+            <div id="event-map"></div>
+
+            <div *ngIf="selectedLat && selectedLng" class="map-coords">
+              ✅ {{ selectedLat | number: "1.4-4" }},
+              {{ selectedLng | number: "1.4-4" }}
+            </div>
+            <div *ngIf="!selectedLat" class="map-hint">
+              💡 Cliquez sur la carte ou recherchez une adresse pour épingler la
+              position
+            </div>
+          </div>
+        </ng-container>
+
+        <!-- ── Cas : En Ligne ou Hybride → Lien Meet/Zoom ── -->
+        <ng-container *ngIf="showMeetLink">
+          <div
+            class="section-title"
+            [style.margin-top]="showMap ? '24px' : '0'"
+          >
+            🌐 Lien de réunion
+          </div>
+
+          <div class="field-group">
+            <label class="field-label">
+              Lien Meet / Zoom <span class="required">*</span>
+            </label>
+            <input
+              formControlName="meetLink"
+              class="field-input"
+              placeholder="https://meet.google.com/... ou https://zoom.us/..."
+              [class.invalid]="f['meetLink'].invalid && f['meetLink'].touched"
+            />
+            <div
+              class="field-error"
+              *ngIf="f['meetLink'].invalid && f['meetLink'].touched"
+            >
+              ⚠ Lien de réunion requis
+            </div>
+          </div>
+        </ng-container>
+      </div>
+
+      <!-- ══ SECTION 3 : Capacité & Prix ══ -->
+      <div class="form-section">
+        <div class="section-title">💰 Capacité &amp; Prix</div>
+
+        <div class="field-row">
+          <div class="field-col">
+            <label class="field-label">Prix (TND)</label>
+            <input
+              type="number"
+              formControlName="price"
+              class="field-input"
+              min="0"
+              step="0.01"
+              placeholder="0.00"
+              [class.invalid]="f['price'].invalid && f['price'].touched"
+            />
+            <div
+              class="field-error"
+              *ngIf="f['price'].invalid && f['price'].touched"
+            >
+              ⚠ Prix invalide
+            </div>
+          </div>
+          <div class="field-col">
+            <label class="field-label"
+              >Participants max <span class="required">*</span></label
+            >
+            <input
+              type="number"
+              formControlName="maxParticipants"
+              class="field-input"
+              min="1"
+              placeholder="Ex: 100"
+              [class.invalid]="
+                f['maxParticipants'].invalid && f['maxParticipants'].touched
+              "
+            />
+            <div
+              class="field-error"
+              *ngIf="
+                f['maxParticipants'].invalid && f['maxParticipants'].touched
+              "
+            >
+              ⚠ Doit être supérieur à 0
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SECTION 4 : Dates ══ -->
+      <div class="form-section">
+        <div class="section-title">📅 Dates</div>
+
+        <div class="field-row">
+          <div class="field-col">
+            <label class="field-label"
+              >Date de début <span class="required">*</span></label
+            >
+            <input
+              type="date"
+              formControlName="startDate"
+              class="field-input"
+              [class.invalid]="f['startDate'].invalid && f['startDate'].touched"
+            />
+            <div
+              class="field-error"
+              *ngIf="f['startDate'].invalid && f['startDate'].touched"
+            >
+              ⚠ Date de début requise
+            </div>
+          </div>
+          <div class="field-col">
+            <label class="field-label"
+              >Date de fin <span class="required">*</span></label
+            >
+            <input
+              type="date"
+              formControlName="endDate"
+              class="field-input"
+              [class.invalid]="f['endDate'].invalid && f['endDate'].touched"
+            />
+            <div
+              class="field-error"
+              *ngIf="f['endDate'].invalid && f['endDate'].touched"
+            >
+              ⚠ Date de fin requise
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ══ SECTION 5 : Médias ══ -->
+      <div class="form-section">
+        <div class="section-title">🖼️ Médias</div>
+
+        <div *ngIf="isEdit && event?.mediaFileName" class="field-group">
+          <label class="field-label">Image actuelle</label>
+          <div class="current-image-wrap">
+            <img
+              [src]="'http://localhost:8090/uploads/' + event?.mediaFileName"
+              alt="Image de l'événement"
+            />
+            <div class="current-image-info">
+              {{ event?.mediaFileName }}
+              <span>Uploadez une nouvelle image pour la remplacer</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="field-group">
+          <label class="field-label">
+            {{ isEdit ? "Nouvelle image (optionnel)" : "Image / Affiche" }}
+          </label>
+          <input
+            type="file"
+            (change)="onFileSelected($event)"
+            class="field-input"
+            accept="image/*,video/mp4,.pdf"
+          />
+        </div>
+      </div>
+
+      <!-- ══ ACTIONS ══ -->
+      <div class="form-actions">
+        <a routerLink="/admin/events" class="btn-cancel">Cancel</a>
+        <button type="submit" class="btn-submit" [disabled]="loading">
+          <span class="spin-sm" *ngIf="loading"></span>
+          {{ isEdit ? "Save updates" : "Add Event & configure sessions →" }}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>

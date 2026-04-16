@@ -1,9 +1,9 @@
 import { Injectable } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
-import { Quiz } from '../../core/models/quiz';
+import { Quiz } from '../models/quiz';
 
-const QUIZ_API_URL = 'http://localhost:8081/api/quizzes';
+const QUIZ_API_URL = 'http://localhost:8080/api/quizzes';
 
 @Injectable({
     providedIn: 'root'

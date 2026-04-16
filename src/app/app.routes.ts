@@ -85,7 +85,20 @@ export const routes: Routes = [
           import('./frontoffice/jungle/student/Quiz/student-quiz-history.component')
             .then(m => m.StudentQuizHistoryComponent)
       },
+      {
+        path: 'booking-dashboard',
+        loadComponent: () =>
+          import('./frontoffice/jungle/student/booking-dashboard/student-dashboard.component')
+            .then(m => m.StudentDashboardComponent)
+      },
       { path: 'profile', component: StudentProfileComponent },
+      {
+        path: 'payments/dashboard',
+        loadComponent: () =>
+          import('./backoffice/pages/payments/payment-dashboard/payment-dashboard.component').then(
+            (m) => m.PaymentDashboardComponent,
+          ),
+      },
 
     ]
   },
@@ -150,6 +163,12 @@ export const routes: Routes = [
             .then(m => m.TutorQuizResultsComponent)
       },
       { path: 'quiz/:id/stats', component: TutorQuizStatsComponent },
+      {
+        path: 'booking-dashboard',
+        loadComponent: () =>
+          import('./frontoffice/jungle/tutor/booking-dashboard/tutor-dashboard.component')
+            .then(m => m.TutorDashboardComponent)
+      },
 
     ]
   },
@@ -184,6 +203,12 @@ export const routes: Routes = [
             .then(m => m.BookingFormComponent)
       },
       { path: 'bookings', component: BookingListComponent },
+      {
+        path: 'booking-dashboard',
+        loadComponent: () =>
+          import('./backoffice/pages/AdminBooking/Admin bookings.component')
+            .then(m => m.AdminBookingsComponent)
+      },
       // ── Quiz routes (admin) ──
       {
         path: 'quiz',
@@ -205,6 +230,17 @@ export const routes: Routes = [
             .then(m => m.QuizTakeComponent)
       },
     ]
+  },
+
+  // ══════════════════════════════════════════════
+  // PAIEMENT — accessible à tout utilisateur connecté
+  // ══════════════════════════════════════════════
+  {
+    path: 'student/pay',
+    canActivate: [authGuard],
+    loadComponent: () =>
+      import('./frontoffice/jungle/student/student-pay/student-pay.component')
+        .then(m => m.StudentPayComponent),
   },
 
   // ══════════════════════════════════════════════

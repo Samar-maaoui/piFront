@@ -16,6 +16,7 @@ export const STUDENT_NAV: NavItem[] = [
   { label: 'My Sessions', route: '/student/sessions' },
   { label: 'My Bookings', route: '/student/bookings' },
   { label: 'History', route: '/student/booking-history' },
+  { label: 'Booking Dashboard', route: '/student/booking-dashboard' },
   { label: 'Quizzes', route: '/student/quiz' },
   { label: 'Profile', route: '/student/profile' },
 ];

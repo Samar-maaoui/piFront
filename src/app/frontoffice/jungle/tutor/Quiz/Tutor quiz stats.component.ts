@@ -23,7 +23,7 @@ export class TutorQuizStatsComponent implements OnInit {
   scoreByDayEntries: { date: string; score: number }[] = [];
   maxDayScore = 100;
 
-  private api = 'http://localhost:8081/api';
+  private api = 'http://localhost:8080/api';
 
   constructor(
     private http: HttpClient,

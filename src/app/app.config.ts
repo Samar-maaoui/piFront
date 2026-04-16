@@ -5,7 +5,7 @@ import { routes } from './app.routes';
 import { provideClientHydration } from '@angular/platform-browser';
 import { provideLottieOptions } from 'ngx-lottie';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
-import { BookingService } from './backoffice/services/booking.service';
+import { BookingService } from './core/services/booking.service';
 import { AuthService } from './core/services/auth.service';
 
 export const appConfig: ApplicationConfig = {

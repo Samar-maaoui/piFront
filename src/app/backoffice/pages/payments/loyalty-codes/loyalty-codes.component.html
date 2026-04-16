@@ -1,0 +1,119 @@
+<div class="lc-page">
+
+  <!-- Toast -->
+  <div class="lc-toast" *ngIf="showToast" [class.error]="toastType === 'error'">
+    {{ toastMessage }}
+  </div>
+
+  <!-- Header -->
+  <div class="lc-header">
+    <div>
+      <h2>Loyalty Promo Codes</h2>
+      <p>All automatically generated codes from the loyalty program</p>
+    </div>
+    <button class="lc-btn-refresh" (click)="load()">🔄 Refresh</button>
+  </div>
+
+  <!-- KPI cards -->
+  <div class="lc-kpis">
+    <div class="lc-kpi">
+      <span class="lc-kpi-icon">🎟️</span>
+      <span class="lc-kpi-val">{{ codes.length }}</span>
+      <span class="lc-kpi-lbl">Total Codes</span>
+    </div>
+    <div class="lc-kpi green">
+      <span class="lc-kpi-icon">✅</span>
+      <span class="lc-kpi-val">{{ totalActive }}</span>
+      <span class="lc-kpi-lbl">Active</span>
+    </div>
+    <div class="lc-kpi blue">
+      <span class="lc-kpi-icon">💸</span>
+      <span class="lc-kpi-val">{{ totalUsed }}</span>
+      <span class="lc-kpi-lbl">Used</span>
+    </div>
+    <div class="lc-kpi red">
+      <span class="lc-kpi-icon">⏰</span>
+      <span class="lc-kpi-val">{{ totalExpired }}</span>
+      <span class="lc-kpi-lbl">Expired</span>
+    </div>
+    <div class="lc-kpi purple">
+      <span class="lc-kpi-icon">👤</span>
+      <span class="lc-kpi-val">{{ uniqueOwners }}</span>
+      <span class="lc-kpi-lbl">Members</span>
+    </div>
+  </div>
+
+  <!-- Filters -->
+  <div class="lc-filters">
+    <input
+      class="lc-search"
+      type="text"
+      placeholder="Search by code or email..."
+      [(ngModel)]="searchTerm"
+      (input)="applyFilters()"
+    />
+    <select class="lc-select" [(ngModel)]="filterStatus" (change)="applyFilters()">
+      <option value="">All statuses</option>
+      <option value="active">Active</option>
+      <option value="used">Used</option>
+      <option value="expired">Expired</option>
+    </select>
+    <button class="lc-btn-reset" (click)="resetFilters()">Reset</button>
+  </div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="lc-loading">Loading...</div>
+
+  <!-- Table -->
+  <div class="lc-table-wrap" *ngIf="!loading">
+    <table class="lc-table">
+      <thead>
+        <tr>
+          <th (click)="sortBy('code')" class="sortable">
+            Code {{ sortField === 'code' ? (sortDir === 'asc' ? '▲' : '▼') : '' }}
+          </th>
+          <th (click)="sortBy('ownerEmail')" class="sortable">
+            Owner {{ sortField === 'ownerEmail' ? (sortDir === 'asc' ? '▲' : '▼') : '' }}
+          </th>
+          <th (click)="sortBy('value')" class="sortable">
+            Discount {{ sortField === 'value' ? (sortDir === 'asc' ? '▲' : '▼') : '' }}
+          </th>
+          <th (click)="sortBy('expirationDate')" class="sortable">
+            Expiry {{ sortField === 'expirationDate' ? (sortDir === 'asc' ? '▲' : '▼') : '' }}
+          </th>
+          <th>Usage</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="filtered.length === 0">
+          <td colspan="6" class="lc-no-data">No loyalty codes found.</td>
+        </tr>
+        <tr *ngFor="let c of filtered">
+          <td><span class="lc-code-mono">{{ c.code }}</span></td>
+          <td class="lc-email">{{ c.ownerEmail }}</td>
+          <td><span class="lc-discount">{{ c.value }}%</span></td>
+          <td [class.lc-expired-date]="getStatus(c) === 'expired'">
+            {{ c.expirationDate | date:'dd/MM/yyyy' }}
+          </td>
+          <td>
+            <div class="lc-usage-bar">
+              <div
+                class="lc-usage-fill"
+                [style.width.%]="(c.usesCount / c.maxUses) * 100"
+              ></div>
+            </div>
+            <span class="lc-usage-txt">{{ c.usesCount }}/{{ c.maxUses }}</span>
+          </td>
+          <td>
+            <span class="lc-status-badge" [ngClass]="'lc-' + getStatus(c)">
+              {{ getStatusLabel(c) }}
+            </span>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="lc-count">Showing {{ filtered.length }} of {{ codes.length }} codes</div>
+  </div>
+
+</div>

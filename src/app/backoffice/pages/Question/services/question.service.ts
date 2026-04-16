@@ -4,8 +4,8 @@ import { Observable } from 'rxjs';
 import { Question, Answer } from '../../models/question';
 
 /** Base URL du microservice Question (Spring Boot) */
-const QUESTION_API_URL = 'http://localhost:8081/api/questions';
-const ANSWER_API_URL = 'http://localhost:8081/api/answers'; // AJOUTER CETTE LIGNE
+const QUESTION_API_URL = 'http://localhost:8080/api/questions';
+const ANSWER_API_URL = 'http://localhost:8080/api/answers'; // AJOUTER CETTE LIGNE
 
 // Interface pour le corps de la requête (type-safe)
 interface QuestionRequestBody {

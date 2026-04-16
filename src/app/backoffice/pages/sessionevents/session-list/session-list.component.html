@@ -1,0 +1,109 @@
+<div class="container mt-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2>Sessions</h2>
+    </div>
+    <a routerLink="/admin/sessionevents/add" class="btn btn-primary mb-3">
+      + Add session
+    </a>
+  </div>
+
+  <!-- Erreur -->
+  <div *ngIf="error" class="alert-danger p-3 rounded mb-3">⚠️ {{ error }}</div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border"></div>
+    <p class="mt-2 text-muted">Chargement...</p>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading" class="table-wrapper">
+    <div class="table-responsive">
+      <table class="table table-hover table-bordered">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Date</th>
+            <th>Heure début</th>
+            <th>Heure fin</th>
+            <th>Type</th>
+            <th>Salle</th>
+            <th>Lien</th>
+            <th>Places dispo</th>
+            <th>Événement</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let s of sessions">
+            <td>{{ s.id }}</td>
+            <td>{{ s.date }}</td>
+            <td>{{ s.startTime }}</td>
+            <td>{{ s.endTime }}</td>
+            <td>
+              <span
+                class="badge-type"
+                [class.online]="s.type === 'ONLINE'"
+                [class.presentiel]="s.type === 'PRESENTIEL'"
+                [class.hybrid]="s.type === 'HYBRID'"
+              >
+                {{
+                  s.type === "ONLINE"
+                    ? "🌐 Online"
+                    : s.type === "PRESENTIEL"
+                      ? "📍 Présentiel"
+                      : "🔀 Hybrid"
+                }}
+              </span>
+            </td>
+            <td>{{ s.room }}</td>
+            <td>
+              <a
+                *ngIf="s.meetingLink"
+                [href]="s.meetingLink"
+                target="_blank"
+                class="btn-link-meet"
+                rel="noopener noreferrer"
+              >
+                🔗 Rejoindre
+              </a>
+              <span *ngIf="!s.meetingLink" class="text-muted small">—</span>
+            </td>
+            <td class="text-center">
+              <span class="seats-badge">{{ s.availableSeats }}</span>
+            </td>
+            <td>
+              <strong>{{ getEventTitle(s.eventId) }}</strong>
+            </td>
+            <td>
+              <a
+                [routerLink]="['/admin/sessionevents/edit', s.id]"
+                class="btn btn-warning btn-sm me-1"
+                >✏️</a
+              >
+              <button
+                (click)="deleteSession(s.id!)"
+                class="btn btn-danger btn-sm"
+              >
+                🗑️
+              </button>
+            </td>
+          </tr>
+
+          <!-- Empty state -->
+          <tr *ngIf="sessions.length === 0">
+            <td colspan="10" class="empty-state">
+              <div style="font-size: 40px">📭</div>
+              <p>Aucune session trouvée</p>
+              <a routerLink="/admin/sessionevents/add" class="btn btn-primary">
+                Créer la première session
+              </a>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

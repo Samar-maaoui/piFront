@@ -1,0 +1,178 @@
+<!-- Loading -->
+<div class="sdb-loading" *ngIf="loading">
+  <div class="sdb-spinner"></div>
+  <span>Loading dashboard…</span>
+</div>
+
+<div class="sdb-root" *ngIf="!loading && dashboard">
+
+  <!-- ── En-tête ──────────────────────────────── -->
+  <div class="sdb-header">
+    <div>
+      <h1 class="sdb-title">Booking Dashboard</h1>
+      <p class="sdb-sub">Welcome back, <strong>{{ studentName }}</strong> </p>
+    </div>
+    <a routerLink="/student/tutors" class="sdb-cta">+ Book a Session</a>
+  </div>
+
+  <!-- ── Cartes métriques ──────────────────────── -->
+  <div class="sdb-metrics">
+
+    <div class="sdb-card metric">
+      <div class="metric-body">
+        <span class="metric-val">{{ totalSessions }}</span>
+        <span class="metric-lbl">Total Sessions</span>
+      </div>
+    </div>
+
+    <div class="sdb-card metric">
+      <div class="metric-body">
+        <span class="metric-val">{{ upcomingSessions }}</span>
+        <span class="metric-lbl">Upcoming</span>
+      </div>
+    </div>
+
+    <div class="sdb-card metric">
+      <div class="metric-body">
+        <span class="metric-val">{{ hoursLearned }}<small> h</small></span>
+        <span class="metric-lbl">Hours Learned</span>
+      </div>
+    </div>
+
+    <div class="sdb-card metric accent">
+      <div class="metric-icon" style="background:#fdf4ff; color:#a855f7;">$</div>
+      <div class="metric-body">
+        <span class="metric-val">{{ totalSpent | number:'1.0-0' }}<small> DT</small></span>
+        <span class="metric-lbl">Total Spent</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Graphiques ────────────────────────────── -->
+  <div class="sdb-charts">
+
+    <div class="sdb-card chart-card">
+      <div class="card-hd">
+        <span class="card-title">Booking Status</span>
+        <span class="badge-total">{{ bookings.length }} total</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas #statusChart></canvas>
+      </div>
+    </div>
+
+    <div class="sdb-card chart-card">
+      <div class="card-hd">
+        <span class="card-title">Hours Learned / Week</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas #hoursChart></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Statuts rapides ───────────────────────── -->
+  <div class="sdb-status-row">
+    <div class="status-pill completed">
+      <span class="pill-dot"></span>
+      <span class="pill-lbl">Completed</span>
+      <span class="pill-val">{{ completedCount }}</span>
+    </div>
+    <div class="status-pill confirmed">
+      <span class="pill-dot"></span>
+      <span class="pill-lbl">Confirmed</span>
+      <span class="pill-val">{{ confirmedCount }}</span>
+    </div>
+    <div class="status-pill pending">
+      <span class="pill-dot"></span>
+      <span class="pill-lbl">Pending</span>
+      <span class="pill-val">{{ pendingCount }}</span>
+    </div>
+    <div class="status-pill cancelled">
+      <span class="pill-dot"></span>
+      <span class="pill-lbl">Cancelled</span>
+      <span class="pill-val">{{ cancelledCount }}</span>
+    </div>
+  </div>
+
+  <!-- ── Upcoming: sessions API first, bookings fallback ── -->
+  <div class="sdb-card sessions-card">
+    <div class="card-hd">
+      <span class="card-title">Upcoming Sessions</span>
+      <a routerLink="/student/sessions" class="card-link">View all →</a>
+    </div>
+
+    <!-- Sessions from API -->
+    <ng-container *ngIf="dashboard.nextSessions.length > 0">
+      <div class="session-row" *ngFor="let s of dashboard.nextSessions">
+        <div class="session-avatar">{{ s.id }}</div>
+        <div class="session-info">
+          <span class="session-name">Session #{{ s.id }}</span>
+          <span class="session-date">{{ s.startedAt | date:'EEE d MMM, HH:mm' }}</span>
+        </div>
+        <span class="session-badge upcoming">Scheduled</span>
+      </div>
+    </ng-container>
+
+    <!-- Bookings fallback when sessions API returns empty -->
+    <ng-container *ngIf="dashboard.nextSessions.length === 0">
+      <ng-container *ngFor="let b of bookings | slice:0:5">
+        <div class="session-row" *ngIf="b.status === 'PENDING' || b.status === 'CONFIRMED' || b.status === 'ACCEPTED'">
+          <div class="session-avatar">#{{ b.id }}</div>
+          <div class="session-info">
+            <span class="session-name">Booking #{{ b.id }} — {{ b.type }}</span>
+            <span class="session-date">{{ b.sessionDate }} · {{ b.startTime | slice:0:5 }} – {{ b.endTime | slice:0:5 }}</span>
+          </div>
+          <span class="session-badge upcoming">{{ b.status }}</span>
+        </div>
+      </ng-container>
+      <div class="sessions-empty" *ngIf="pendingCount + confirmedCount === 0">
+        <span class="empty-icon"></span>
+        <span>No upcoming sessions</span>
+      </div>
+    </ng-container>
+  </div>
+
+  <!-- ── History: sessions API first, bookings fallback ── -->
+  <div class="sdb-card sessions-card">
+    <div class="card-hd">
+      <span class="card-title">Session History</span>
+      <a routerLink="/student/booking-history" class="card-link">View all →</a>
+    </div>
+
+    <!-- Sessions from API -->
+    <ng-container *ngIf="dashboard.sessionHistory.length > 0">
+      <div class="session-row" *ngFor="let s of dashboard.sessionHistory">
+        <div class="session-avatar done">{{ s.id }}</div>
+        <div class="session-info">
+          <span class="session-name">Session #{{ s.id }}</span>
+          <span class="session-date">{{ s.endedAt | date:'EEE d MMM, HH:mm' }}</span>
+        </div>
+        <span class="session-badge done">Completed</span>
+      </div>
+    </ng-container>
+
+    <!-- Bookings fallback -->
+    <ng-container *ngIf="dashboard.sessionHistory.length === 0">
+      <ng-container *ngFor="let b of bookings | slice:0:5">
+        <div class="session-row" *ngIf="b.status === 'COMPLETED' || b.status === 'CANCELLED' || b.status === 'REJECTED'">
+          <div class="session-avatar" [class.done]="b.status === 'COMPLETED'">#{{ b.id }}</div>
+          <div class="session-info">
+            <span class="session-name">Booking #{{ b.id }} — {{ b.type }}</span>
+            <span class="session-date">{{ b.sessionDate }} · {{ b.startTime | slice:0:5 }} – {{ b.endTime | slice:0:5 }}</span>
+          </div>
+          <span class="session-badge" [class.done]="b.status === 'COMPLETED'" [class.badge-cancelled]="b.status !== 'COMPLETED'">
+            {{ b.status }}
+          </span>
+        </div>
+      </ng-container>
+      <div class="sessions-empty" *ngIf="completedCount === 0">
+   
+        <span>No completed sessions yet</span>
+      </div>
+    </ng-container>
+  </div>
+
+</div>

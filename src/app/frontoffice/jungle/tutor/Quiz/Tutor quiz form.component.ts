@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { Quiz } from '../../../../core/models/quiz';
 import { Question, Answer } from '../../../../core/models/question';
 import { QuizService } from '../../../../backoffice/pages/Quiz/quiz.service';
-import { QuestionService } from '../../../../backoffice/services/question.service';
+import { QuestionService } from '../../../../core/services/question.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { forkJoin, of } from 'rxjs';
 import { switchMap } from 'rxjs/operators';

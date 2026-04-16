@@ -125,4 +125,13 @@ export class BookingListComponent implements OnInit {
     };
     return map[status] || 'bg-secondary';
   }
+
+  getTypeLabel(type: string | undefined): string {
+    const map: Record<string, string> = {
+      'ONE_TO_ONE': '1-on-1',
+      'GROUP': 'Group',
+      'INFO_SESSION': 'Info'
+    };
+    return map[type || ''] || (type || 'Unknown');
+  }
 }

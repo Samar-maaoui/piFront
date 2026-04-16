@@ -1,0 +1,152 @@
+<div class="container mt-4">
+  <!-- Header -->
+  <div class="d-flex justify-content-between align-items-center mb-4">
+    <div>
+      <h2>Events</h2>
+    </div>
+    <a routerLink="/admin/events/add" class="btn btn-primary mb-3">
+      <h3>+</h3>
+      Add Event
+    </a>
+  </div>
+
+  <!-- Erreur -->
+  <div *ngIf="error" class="alert-danger p-3 rounded mb-3">⚠️ {{ error }}</div>
+
+  <!-- Loading -->
+  <div *ngIf="loading" class="text-center py-5">
+    <div class="spinner-border"></div>
+    <p class="mt-2 text-muted">Chargement...</p>
+  </div>
+
+  <!-- Table -->
+  <div *ngIf="!loading" class="table-wrapper">
+    <div class="table-responsive">
+      <table class="table table-hover table-bordered">
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Titre</th>
+            <th>Catégorie</th>
+            <th>Lieu</th>
+            <th>Type</th>
+            <th>Prix</th>
+            <th>Places max</th>
+            <th>Début</th>
+            <th>Fin</th>
+            <th>Statut</th>
+            <th>Actions</th>
+            <th>Media</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let event of events">
+            <td>{{ event.id }}</td>
+            <td>
+              <strong>{{ event.title }}</strong>
+            </td>
+            <td>{{ event.category }}</td>
+
+            <!-- Lieu + bouton Google Maps -->
+            <td>
+              <div>{{ event.location }}</div>
+              <a
+                *ngIf="event.latitude && event.longitude"
+                [href]="
+                  'https://www.google.com/maps?q=' +
+                  event.latitude +
+                  ',' +
+                  event.longitude
+                "
+                target="_blank"
+                class="btn btn-outline-info btn-sm mt-1"
+                title="Voir sur Google Maps"
+              >
+                🗺️ Maps
+              </a>
+              <span
+                *ngIf="!event.latitude || !event.longitude"
+                class="text-muted small"
+                >—</span
+              >
+            </td>
+
+            <td>
+              <span
+                class="badge-online"
+                [class.online]="event.format === 'En Ligne'"
+                [class.offline]="event.format === 'Présentiel'"
+              >
+                {{
+                  event.format === "En Ligne" ? "🌐 En ligne" : "📍 Présentiel"
+                }}
+              </span>
+            </td>
+            <td class="price">{{ event.price }} TND</td>
+            <td class="text-center">{{ event.maxParticipants }}</td>
+            <td>{{ event.startDate }}</td>
+            <td>{{ event.endDate }}</td>
+            <td>
+              <span class="badge-status {{ event.status }}">{{
+                event.status
+              }}</span>
+            </td>
+            <td>
+              <a
+                [routerLink]="['/admin/events/edit', event.id]"
+                class="btn btn-warning btn-sm me-1"
+                >✏️</a
+              >
+              <button (click)="delete(event.id!)" class="btn btn-danger btn-sm">
+                🗑️
+              </button>
+            </td>
+            <td>
+              <ng-container *ngIf="event.mediaFileName">
+                <img
+                  *ngIf="
+                    event.mediaFileName.endsWith('.jpg') ||
+                    event.mediaFileName.endsWith('.png')
+                  "
+                  [src]="'http://localhost:8090/uploads/' + event.mediaFileName"
+                  width="120"
+                />
+                <video
+                  *ngIf="event.mediaFileName.endsWith('.mp4')"
+                  width="200"
+                  controls
+                >
+                  <source
+                    [src]="
+                      'http://localhost:8090/uploads/' + event.mediaFileName
+                    "
+                  />
+                </video>
+                <a
+                  *ngIf="event.mediaFileName.endsWith('.pdf')"
+                  [href]="
+                    'http://localhost:8090/uploads/' + event.mediaFileName
+                  "
+                  target="_blank"
+                >
+                  📄 Voir PDF
+                </a>
+              </ng-container>
+            </td>
+          </tr>
+
+          <!-- Empty state -->
+          <tr *ngIf="events.length === 0">
+            <td colspan="12" class="empty-state">
+              <div style="font-size: 40px">📭</div>
+              <p>Aucun événement trouvé</p>
+              <a routerLink="/admin/events/add" class="btn btn-primary"
+                >Créer le premier événement</a
+              >
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+</div>

@@ -23,6 +23,7 @@ export const ADMIN_NAV: NavItem[] = [
   { label: 'Sessions', route: '/admin/sessions' },
   { label: 'Availability', route: '/admin/availability' },
   { label: 'Bookings', route: '/admin/bookings' },
+  { label: 'Booking Dashboard', route: '/admin/booking-dashboard' },
   { label: 'Feedbacks', route: '/admin/feedbacks' },
   // New quiz management section
   { label: 'Quizzes', route: '/admin/quiz' }

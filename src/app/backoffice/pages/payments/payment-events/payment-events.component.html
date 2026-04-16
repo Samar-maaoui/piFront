@@ -1,0 +1,362 @@
+<div class="payment-container">
+  <!-- Toast -->
+  <div
+    class="toast-container"
+    [class.show]="showToast"
+    [class.toast-error]="toastType === 'error'"
+  >
+    <div class="toast-content">
+      <span class="toast-icon">{{
+        toastType === "success" ? "✅" : "❌"
+      }}</span>
+      {{ toastMessage }}
+    </div>
+  </div>
+
+  <!-- Header -->
+  <div class="payment-header">
+    <h2>💳 Real-Time Payments</h2>
+    <p>Financial overview from the Payment Microservice</p>
+  </div>
+
+  <!-- Stats -->
+  <div class="stats-row" *ngIf="!loading">
+    <div class="stat-card green">
+      <div class="stat-icon">💰</div>
+      <div class="stat-info">
+        <span class="stat-value">{{ getTotalRevenue() }} TND</span>
+        <span class="stat-label">Total Revenue</span>
+      </div>
+    </div>
+    <div class="stat-card blue">
+      <div class="stat-icon">✅</div>
+      <div class="stat-info">
+        <span class="stat-value">{{ getPaidCount() }}</span>
+        <span class="stat-label">Paid</span>
+      </div>
+    </div>
+    <div class="stat-card orange">
+      <div class="stat-icon">⏳</div>
+      <div class="stat-info">
+        <span class="stat-value">{{ getPendingCount() }}</span>
+        <span class="stat-label">Pending</span>
+      </div>
+    </div>
+    <div class="stat-card gray">
+      <div class="stat-icon">📋</div>
+      <div class="stat-info">
+        <span class="stat-value">{{ payments.length }}</span>
+        <span class="stat-label">Total Transactions</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- ── Filtres ── -->
+  <div class="filters-bar" *ngIf="!loading">
+    <div class="search-box">
+      <span class="search-icon">🔍</span>
+      <input
+        type="text"
+        placeholder="Nom, email, référence, ID..."
+        [(ngModel)]="searchTerm"
+        (input)="onSearch()"
+        class="search-input"
+      />
+      <button
+        *ngIf="searchTerm"
+        class="search-clear"
+        (click)="searchTerm = ''; onSearch()"
+      >
+        ✕
+      </button>
+    </div>
+
+    <select
+      class="filter-select"
+      [(ngModel)]="filterStatus"
+      (change)="onFilterChange()"
+    >
+      <option value="">Tous les statuts</option>
+      <option value="PAID">✅ PAID</option>
+      <option value="PENDING">⏳ PENDING</option>
+      <option value="FAILED">❌ FAILED</option>
+      <option value="REFUNDED">🔄 REFUNDED</option>
+    </select>
+
+    <select
+      class="filter-select"
+      [(ngModel)]="filterMethod"
+      (change)="onFilterChange()"
+    >
+      <option value="">Toutes les méthodes</option>
+      <option value="CREDIT_CARD">💳 Credit Card</option>
+      <option value="BANK_TRANSFER">🏦 Bank Transfer</option>
+      <option value="CASH">💵 Cash</option>
+      <option value="ONLINE_PAYMENT">🌐 Online Payment</option>
+    </select>
+
+    <input
+      type="date"
+      class="filter-date"
+      [(ngModel)]="filterDateFrom"
+      (change)="onFilterChange()"
+      title="Date début"
+    />
+
+    <input
+      type="date"
+      class="filter-date"
+      [(ngModel)]="filterDateTo"
+      (change)="onFilterChange()"
+      title="Date fin"
+    />
+
+    <button
+      class="btn-reset"
+      (click)="resetFilters()"
+      *ngIf="activeFilterCount > 0"
+    >
+      Réinitialiser <span class="filter-count">{{ activeFilterCount }}</span>
+    </button>
+  </div>
+
+  <!-- Résultats -->
+  <div class="results-info" *ngIf="!loading">
+    {{ filteredPayments.length }} résultat(s) sur {{ payments.length }}
+  </div>
+
+  <!-- Tableau -->
+  <div *ngIf="!loading" class="table-wrapper">
+    <table class="payment-table">
+      <thead>
+        <tr>
+          <th class="sortable" (click)="sortBy('id')">
+            #ID
+            <span class="sort-icon">{{
+              sortField === "id" ? (sortDir === "asc" ? "↑" : "↓") : "↕"
+            }}</span>
+          </th>
+          <th class="sortable" (click)="sortBy('paymentDate')">
+            Date
+            <span class="sort-icon">{{
+              sortField === "paymentDate"
+                ? sortDir === "asc"
+                  ? "↑"
+                  : "↓"
+                : "↕"
+            }}</span>
+          </th>
+          <th class="sortable" (click)="sortBy('participantName')">
+            Participant
+            <span class="sort-icon">{{
+              sortField === "participantName"
+                ? sortDir === "asc"
+                  ? "↑"
+                  : "↓"
+                : "↕"
+            }}</span>
+          </th>
+          <th>Email</th>
+          <th>Session ID</th>
+          <th>Method</th>
+          <th class="sortable" (click)="sortBy('amount')">
+            Amount
+            <span class="sort-icon">{{
+              sortField === "amount" ? (sortDir === "asc" ? "↑" : "↓") : "↕"
+            }}</span>
+          </th>
+          <th>Status</th>
+          <th>Registration</th>
+          <th>Reference</th>
+          <th style="min-width: 100px">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let p of filteredPayments">
+          <td>{{ p.id }}</td>
+          <td>{{ p.paymentDate | date: "dd/MM/yyyy HH:mm" }}</td>
+          <td>
+            <strong>{{ p.participantName || "N/A" }}</strong>
+          </td>
+          <td>{{ p.participantEmail }}</td>
+          <td>{{ p.sessionId }}</td>
+          <td>
+            <span class="method-badge">
+              <span *ngIf="p.paymentMethod === 'BANK_TRANSFER'"
+                >🏦 Transfer</span
+              >
+              <span *ngIf="p.paymentMethod === 'CREDIT_CARD'">💳 Card</span>
+              <span *ngIf="p.paymentMethod === 'CASH'">💵 Cash</span>
+              <span *ngIf="p.paymentMethod === 'ONLINE_PAYMENT'"
+                >🌐 Online</span
+              >
+            </span>
+          </td>
+          <td>
+            <strong>{{ p.amount }} TND</strong>
+          </td>
+          <td>
+            <select
+              #statusSelect
+              [value]="p.status"
+              (change)="onStatusChange(p.id, statusSelect.value)"
+              [ngClass]="'status-select ' + getPaymentStatusClass(p.status)"
+            >
+              <option value="PENDING">⏳ PENDING</option>
+              <option value="PAID">✅ PAID</option>
+              <option value="FAILED">❌ FAILED</option>
+              <option value="REFUNDED">🔄 REFUNDED</option>
+            </select>
+          </td>
+          <td>
+            <span class="badge-part">{{
+              p.participationStatus || "NOT REGISTERED"
+            }}</span>
+          </td>
+          <td class="ref-text">{{ p.reference }}</td>
+          <td>
+            <div class="action-buttons">
+              <button
+                class="btn-action btn-edit"
+                (click)="openEditModal(p)"
+                title="Modifier"
+              >
+                ✏️
+              </button>
+              <button
+                class="btn-action btn-delete"
+                (click)="openDeleteModal(p)"
+                title="Supprimer"
+              >
+                🗑️
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="filteredPayments.length === 0">
+          <td colspan="11" class="empty-state">
+            📭 Aucun paiement trouvé pour ces critères
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- MODAL statut -->
+  <div class="modal-overlay" *ngIf="showConfirmModal">
+    <div class="modal-card">
+      <div class="modal-icon">⚠️</div>
+      <h3>Confirmer la modification</h3>
+      <p>
+        Voulez-vous vraiment changer le statut en
+        <strong>{{ pendingStatus }}</strong> ?
+      </p>
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="cancelUpdate()">Annuler</button>
+        <button class="btn-confirm" (click)="confirmUpdate()">Confirmer</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL suppression -->
+  <div class="modal-overlay" *ngIf="showDeleteModal">
+    <div class="modal-card modal-delete">
+      <div class="modal-icon">🗑️</div>
+      <h3>Supprimer le paiement</h3>
+      <p>
+        Voulez-vous vraiment supprimer le paiement
+        <strong>#{{ paymentToDelete?.id }}</strong>
+        d'un montant de <strong>{{ paymentToDelete?.amount }} TND</strong> ?
+        <br /><span class="warning-text"
+          >⚠️ Cette action est irréversible.</span
+        >
+      </p>
+      <div class="modal-actions">
+        <button
+          class="btn-cancel"
+          (click)="closeDeleteModal()"
+          [disabled]="deleteLoading"
+        >
+          Annuler
+        </button>
+        <button
+          class="btn-danger"
+          (click)="confirmDelete()"
+          [disabled]="deleteLoading"
+        >
+          <span *ngIf="!deleteLoading">🗑️ Supprimer</span>
+          <span *ngIf="deleteLoading" class="spinner"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL modification -->
+  <div class="modal-overlay" *ngIf="showEditModal">
+    <div class="modal-card modal-edit">
+      <div class="modal-icon">✏️</div>
+      <h3>
+        Modifier le paiement
+        <span class="modal-id">#{{ paymentToEdit?.id }}</span>
+      </h3>
+      <div class="edit-form">
+        <div class="form-row">
+          <div class="form-group">
+            <label>Montant (TND)</label>
+            <input
+              type="number"
+              [(ngModel)]="editForm.amount"
+              min="0"
+              step="0.01"
+            />
+          </div>
+          <div class="form-group">
+            <label>Statut</label>
+            <select [(ngModel)]="editForm.status">
+              <option value="PENDING">⏳ PENDING</option>
+              <option value="PAID">✅ PAID</option>
+              <option value="FAILED">❌ FAILED</option>
+              <option value="REFUNDED">🔄 REFUNDED</option>
+            </select>
+          </div>
+        </div>
+        <div class="form-row">
+          <div class="form-group">
+            <label>Méthode</label>
+            <select [(ngModel)]="editForm.paymentMethod">
+              <option value="CASH">💵 Cash</option>
+              <option value="CREDIT_CARD">💳 Credit Card</option>
+              <option value="BANK_TRANSFER">🏦 Bank Transfer</option>
+              <option value="ONLINE_PAYMENT">🌐 Online Payment</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Participant</label>
+            <input type="text" [(ngModel)]="editForm.participantName" />
+          </div>
+        </div>
+        <div class="form-group form-group-full">
+          <label>Email</label>
+          <input type="email" [(ngModel)]="editForm.participantEmail" />
+        </div>
+      </div>
+      <div class="modal-actions">
+        <button
+          class="btn-cancel"
+          (click)="closeEditModal()"
+          [disabled]="editLoading"
+        >
+          Annuler
+        </button>
+        <button
+          class="btn-confirm"
+          (click)="confirmEdit()"
+          [disabled]="editLoading"
+        >
+          <span *ngIf="!editLoading">💾 Enregistrer</span>
+          <span *ngIf="editLoading" class="spinner"></span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

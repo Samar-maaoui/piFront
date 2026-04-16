@@ -1,0 +1,160 @@
+<!-- Loading -->
+<div class="tdb-loading" *ngIf="loading">
+  <div class="tdb-spinner"></div>
+  <span>Loading dashboard…</span>
+</div>
+
+<div class="tdb-root" *ngIf="!loading && dashboard">
+
+  <!-- ── Header ──────────────────────────────────── -->
+  <div class="tdb-header">
+    <div>
+      <h1 class="tdb-title">Booking Dashboard</h1>
+      <p class="tdb-sub">Welcome back, <strong>{{ tutorName }}</strong> 👋</p>
+    </div>
+    <a routerLink="/tutor/availability" class="tdb-cta">+ Manage Availability</a>
+  </div>
+
+  <!-- ── Metric cards ────────────────────────────── -->
+  <div class="tdb-metrics">
+
+    <div class="tdb-card metric">
+      <div class="metric-icon" style="background:#eff6ff; color:#3b82f6;">📅</div>
+      <div class="metric-body">
+        <span class="metric-val">{{ totalSessions }}</span>
+        <span class="metric-lbl">Total Sessions</span>
+      </div>
+    </div>
+
+    <div class="tdb-card metric">
+      <div class="metric-icon" style="background:#f0fdf4; color:#22c55e;">📌</div>
+      <div class="metric-body">
+        <span class="metric-val">{{ upcomingSessions }}</span>
+        <span class="metric-lbl">Upcoming</span>
+      </div>
+    </div>
+
+    <div class="tdb-card metric">
+      <div class="metric-icon" style="background:#fefce8; color:#ca8a04;">⭐</div>
+      <div class="metric-body">
+        <span class="metric-val">{{ dashboard.averageRating | number:'1.1-1' }}<small> / 5</small></span>
+        <span class="metric-lbl">Avg. Rating</span>
+        <span class="metric-stars">{{ stars }}</span>
+      </div>
+    </div>
+
+    <div class="tdb-card metric accent">
+      <div class="metric-icon" style="background:#f0fdf4; color:#16a34a;">💶</div>
+      <div class="metric-body">
+        <span class="metric-val">{{ totalEarned | number:'1.0-0' }}<small> €</small></span>
+        <span class="metric-lbl">Total Earned</span>
+        <span class="metric-rate">&#64; {{ hourlyRate }}€/h</span>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Charts ──────────────────────────────────── -->
+  <div class="tdb-charts">
+
+    <div class="tdb-card chart-card">
+      <div class="card-hd">
+        <span class="card-title">Booking Status</span>
+        <span class="badge-total">{{ bookings.length }} total</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas #statusChart></canvas>
+      </div>
+    </div>
+
+    <div class="tdb-card chart-card">
+      <div class="card-hd">
+        <span class="card-title">Weekly Revenue (€)</span>
+      </div>
+      <div class="chart-wrap">
+        <canvas #revenueChart></canvas>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- ── Status pills ────────────────────────────── -->
+  <div class="tdb-status-row">
+    <div class="status-pill completed">
+      <span class="pill-dot"></span>
+      <span class="pill-lbl">Completed</span>
+      <span class="pill-val">{{ completedCount }}</span>
+    </div>
+    <div class="status-pill confirmed">
+      <span class="pill-dot"></span>
+      <span class="pill-lbl">Confirmed</span>
+      <span class="pill-val">{{ confirmedCount }}</span>
+    </div>
+    <div class="status-pill pending">
+      <span class="pill-dot"></span>
+      <span class="pill-lbl">Pending</span>
+      <span class="pill-val">{{ pendingCount }}</span>
+    </div>
+    <div class="status-pill cancelled">
+      <span class="pill-dot"></span>
+      <span class="pill-lbl">Cancelled</span>
+      <span class="pill-val">{{ cancelledCount }}</span>
+    </div>
+  </div>
+
+  <!-- ── Planned sessions ────────────────────────── -->
+  <div class="tdb-card sessions-card">
+    <div class="card-hd">
+      <span class="card-title">Planned Sessions</span>
+      <a routerLink="/tutor/sessions" class="card-link">View all →</a>
+    </div>
+
+    <div class="sessions-empty" *ngIf="dashboard.plannedSessions.length === 0">
+      <span class="empty-icon">🗓️</span>
+      <span>No sessions scheduled</span>
+    </div>
+
+    <div class="session-row" *ngFor="let s of dashboard.plannedSessions">
+      <div class="session-avatar">{{ s.id }}</div>
+      <div class="session-info">
+        <span class="session-name">Session #{{ s.id }}</span>
+        <span class="session-date">
+          <ng-container *ngIf="s.startedAt">{{ s.startedAt | date:'EEE d MMM, HH:mm' }}</ng-container>
+          <ng-container *ngIf="!s.startedAt && s.duration">Duration: {{ s.duration }} min</ng-container>
+        </span>
+      </div>
+      <span class="session-badge upcoming">Scheduled</span>
+    </div>
+  </div>
+
+  <!-- ── Recent bookings ─────────────────────────── -->
+  <div class="tdb-card sessions-card">
+    <div class="card-hd">
+      <span class="card-title">Recent Bookings</span>
+      <a routerLink="/tutor/bookings" class="card-link">View all →</a>
+    </div>
+
+    <div class="sessions-empty" *ngIf="bookings.length === 0">
+      <span class="empty-icon">📂</span>
+      <span>No bookings yet</span>
+    </div>
+
+    <div class="session-row" *ngFor="let b of bookings | slice:0:6">
+      <div class="session-avatar" [class.done]="b.status === 'COMPLETED'" [class.pending]="b.status === 'PENDING'">
+        #{{ b.id }}
+      </div>
+      <div class="session-info">
+        <span class="session-name">Student #{{ b.studentId }} — {{ b.type }}</span>
+        <span class="session-date">{{ b.sessionDate }} · {{ b.startTime | slice:0:5 }} – {{ b.endTime | slice:0:5 }}</span>
+      </div>
+      <span class="session-badge"
+        [class.upcoming]="b.status === 'CONFIRMED'"
+        [class.done]="b.status === 'COMPLETED'"
+        [class.badge-pending]="b.status === 'PENDING'"
+        [class.badge-cancelled]="b.status === 'CANCELLED'">
+        {{ b.status }}
+      </span>
+    </div>
+  </div>
+
+</div>

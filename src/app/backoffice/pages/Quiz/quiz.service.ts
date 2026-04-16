@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { Quiz } from '../Quiz/quiz';
 
-const QUIZ_API_URL = 'http://localhost:8081/api/quizzes';
+const QUIZ_API_URL = 'http://localhost:8080/api/quizzes';
 
 @Injectable({
   providedIn: 'root'

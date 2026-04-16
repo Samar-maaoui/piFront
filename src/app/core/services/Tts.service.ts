@@ -6,7 +6,7 @@ import { Observable } from 'rxjs';
 @Injectable({ providedIn: 'root' })
 export class TtsService {
 
-  private api = 'http://localhost:8081/api/tts';
+  private api = 'http://localhost:8080/api/tts';
 
   // ✅ Cache audio par texte — évite d'appeler ElevenLabs deux fois pour le même texte
   private audioCache = new Map<string, string>();

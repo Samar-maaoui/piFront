@@ -18,6 +18,7 @@ export class EmailService {
     subject: string;
     date: string;
     time: string;
+    payment_link?: string;
   }) {
     return emailjs.send(this.serviceID, this.templateID, params, this.publicKey);
   }
